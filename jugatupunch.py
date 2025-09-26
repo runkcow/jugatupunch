@@ -157,7 +157,7 @@ async def jugatucheck():
     channel = client.get_guild(MEOW_GUILD_ID).get_channel(MATCH_HISTORY_ID)
     
     async def updateTrackedMessage():
-        res = requests.get(f"https://americas.api.riotgames.com/lol/match/v5/matches/NA1_{config["match_id"]}", headers=HEADER)
+        res = requests.get(f"https://americas.api.riotgames.com/lol/match/v5/matches/NA1_{config['match_id']}", headers=HEADER)
         try:
             res.raise_for_status()
             elores = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{JUGATU_PUUID}", headers=HEADER)
