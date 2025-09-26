@@ -154,9 +154,9 @@ async def jugatucheck():
             data = res.json()
             totalTime = data["info"]["gameDuration"]
             strTotalTime = secondStringDisplay(totalTime)
-            timeStart = data["info"]["gameCreation"]
+            timeStart = data["info"]["gameCreation"] / 1000
             # strTimeStart = datetime.fromtimestamp(timeStart / 1000, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
-            timeEnd = data["info"]["gameEndTimestamp"]
+            timeEnd = data["info"]["gameEndTimestamp"] / 1000
             # strTimeEnd = datetime.fromtimestamp(timeEnd / 1000, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
             participate = next((participant for participant in data["info"]["participants"] if participant["puuid"] == JUGATU_PUUID), None)
             # hope it doesn't result with None
