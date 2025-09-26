@@ -7,6 +7,7 @@ from discord.ext import tasks
 from typing import Optional
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import random
 import json
 
@@ -24,7 +25,7 @@ MATCH_HISTORY_ID = 1420647209468166174
 JUGATU_PUUID = "_F146yiCz2CqL5rRj2KmPpOu6qHhOQX_URjHQsNEYPnYHyM0E1GcgnqZdN_lRI-2AsNjrCTH-o0UOA"
 JUGATU_NAME = "白蟹翡翠王"
 JUGATU_TAG = "6 7"
-BEENAN_BET = datetime(2025, 9, 12, 18, 38)
+BEENAN_BET = datetime(2025, 9, 12, 18, 38, tzinfo=ZoneInfo("America/New_York"))
 JUGATU_LP_GOAL = 3000
 
 intents = discord.Intents.default()
@@ -55,7 +56,7 @@ CHAMPION_ID = json.load(open("championID.json", "r"))
 # useless test command
 @tree.command(name="test", description="test random", guilds=GUILD_LIST)
 async def test(interaction: discord.Interaction):
-    start = datetime.fromtimestamp(1758834195).strftime("%H:%M:%S")
+    start = datetime.fromtimestamp(1758834195, tz=ZoneInfo("America/New_York")).strftime("%H:%M:%S")
     embed = discord.Embed(
         title="Jugatu Punch",
         description=f"START: {start}",
@@ -75,22 +76,9 @@ def secondStringDisplay(seconds):
     m, s = divmod(seconds, 60)
     return f"{m:02}:{s:02}"
 
-# irrelevant nickname updating function that might get removed in the future
-# @tasks.loop(hours=24)
-# async def update_nickname():
-#     g = client.get_guild(RAT_GUILD_ID)
-#     if not g:
-#         return
-#     m = g.get_member(EMO_ID)
-#     if not m:
-#         return
-#     daysPast = (datetime.now() - BEENAN_BET).days
-#     nickname = f"WHERES MY MONEY? ({daysPast} days)"
-#     await m.edit(nick=nickname)
-
 @tree.command(name="money", description="where's my money?", guilds=GUILD_LIST)
 async def money(interaction: discord.Interaction):
-    await interaction.response.send_message(f"<@{BEENAN_ID}> hasn't paid for {(datetime.now() - BEENAN_BET).days} days...")
+    await interaction.response.send_message(f"<@{BEENAN_ID}> hasn't paid for {(datetime.now(ZoneInfo("America/New_York")) - BEENAN_BET).days} days...")
 
 TIER_LP = {
     "IRON"     : 0,
@@ -167,9 +155,9 @@ async def jugatucheck():
             totalTime = data["info"]["gameDuration"]
             strTotalTime = secondStringDisplay(totalTime)
             timeStart = data["info"]["gameCreation"] / 1000
-            strTimeStart = datetime.fromtimestamp(timeStart).strftime("%I:%M:%S %p")
+            strTimeStart = datetime.fromtimestamp(timeStart, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
             timeStart = data["info"]["gameEndTimestamp"] / 1000
-            strTimeEnd = datetime.fromtimestamp(timeStart).strftime("%I:%M:%S %p")
+            strTimeEnd = datetime.fromtimestamp(timeStart, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
             participate = next((participant for participant in data["info"]["participants"] if participant["puuid"] == JUGATU_PUUID), None)
             # hope it doesn't result with None
             win = participate["win"]
@@ -195,7 +183,7 @@ async def jugatucheck():
         data = res.json()
         if (config["match_id"] == None):
             timeStart = data["gameStartTime"] / 1000
-            strTimeStart = datetime.fromtimestamp(timeStart).strftime("%I:%M:%S %p")
+            strTimeStart = datetime.fromtimestamp(timeStart, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
             participant = next((participant for participant in data["participants"] if participant["puuid"] == JUGATU_PUUID))
             champion = CHAMPION_ID[f"{participant['championId']}"]
             embed = discord.Embed(
@@ -209,8 +197,6 @@ async def jugatucheck():
             config["match_id"] = data["gameId"]
             save_config(config)
         elif (config["match_id"] != data["gameId"]):
-            print(config["match_id"])
-            print(data["gameId"])
             await updateTrackedMessage()
     elif (res.status_code == 404):
         if (config["tracked_message_id"] != None):
