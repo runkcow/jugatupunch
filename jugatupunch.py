@@ -7,9 +7,7 @@ from discord.ext import tasks
 from typing import Optional
 
 from datetime import datetime
-from datetime import timedelta
 import random
-from enum import Enum
 import json
 
 import requests
@@ -162,6 +160,9 @@ async def jugatucheck():
         res = requests.get(f"https://americas.api.riotgames.com/lol/match/v5/matches/NA1_{config["match_id"]}", headers=HEADER)
         try:
             res.raise_for_status()
+            elores = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{JUGATU_PUUID}", headers=HEADER)
+            eloData = next((rank for rank in elores.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
+            eloResult = f"{eloData["tier"]} {eloData["rank"]} {eloData["leaguePoints"]} LP ({eloData["wins"]}-{eloData["losses"]})"
             data = res.json()
             totalTime = data["info"]["gameDuration"]
             strTotalTime = secondStringDisplay(totalTime)
@@ -176,7 +177,7 @@ async def jugatucheck():
             champion = participate["championName"]
             embed = discord.Embed(
                 title=("MATCH WON" if win else "MATCH LOSS"),
-                description=f"{strTotalTime}\n{strTimeStart} - {strTimeEnd}\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
+                description=f"{eloResult}\n{strTotalTime}\n{strTimeStart} - {strTimeEnd}\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
                 colour=(3447003 if win else 15548997)
             )
             embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{champion}.png")
