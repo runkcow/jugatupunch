@@ -8,6 +8,7 @@ from typing import Optional
 
 # from datetime import datetime
 # from zoneinfo import ZoneInfo
+import math
 import random
 import json
 
@@ -151,12 +152,13 @@ async def jugatucheck():
             elores = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{JUGATU_PUUID}", headers=HEADER)
             eloData = next((rank for rank in elores.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
             eloResult = f"{eloData['tier']} {eloData['rank']} {eloData['leaguePoints']} LP ({eloData['wins']}-{eloData['losses']})"
+            totalLp = TIER_LP[eloData["tier"]] + RANK_LP[eloData["rank"]] + eloData["leaguePoints"]
             data = res.json()
             totalTime = data["info"]["gameDuration"]
             strTotalTime = secondStringDisplay(totalTime)
-            timeStart = data["info"]["gameCreation"] / 1000
+            timeStart = math.floor(data["info"]["gameCreation"] / 1000)
             # strTimeStart = datetime.fromtimestamp(timeStart / 1000, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
-            timeEnd = data["info"]["gameEndTimestamp"] / 1000
+            timeEnd = math.floor(data["info"]["gameEndTimestamp"] / 1000)
             # strTimeEnd = datetime.fromtimestamp(timeEnd / 1000, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
             participate = next((participant for participant in data["info"]["participants"] if participant["puuid"] == JUGATU_PUUID), None)
             # hope it doesn't result with None
@@ -164,7 +166,7 @@ async def jugatucheck():
             kda = f"{participate['kills']}/{participate['deaths']}/{participate['assists']}"
             champion = participate["championName"]
             embed = discord.Embed(
-                title=("MATCH WON" if win else "MATCH LOSS"),
+                title=f"MATCH {"WIN" if win else "LOSS"} {totalLp - config["jugatu_total_lp"]} LP",
                 description=f"{eloResult}\n{strTotalTime}\n<t:{timeStart}:t> - <t:{timeEnd}:t>\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
                 # description=f"{eloResult}\n{strTotalTime}\n{strTimeStart} - {strTimeEnd}\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
                 colour=(3447003 if win else 15548997)
@@ -174,6 +176,7 @@ async def jugatucheck():
             await msg.edit(embed=embed)
             config["tracked_message_id"] = None
             config["match_id"] = None
+            config["jugatu_total_lp"] = totalLp
             save_config(config)
         except requests.HTTPError as e:
             print("HTTP ERROR:", e, res.text)
@@ -183,7 +186,7 @@ async def jugatucheck():
     if (res.status_code == 200):
         data = res.json()
         if (config["match_id"] == None):
-            timeStart = data["gameStartTime"] / 1000
+            timeStart = math.floor(data["gameStartTime"] / 1000)
             participant = next((participant for participant in data["participants"] if participant["puuid"] == JUGATU_PUUID))
             champion = CHAMPION_ID[f"{participant['championId']}"]
             embed = discord.Embed(
