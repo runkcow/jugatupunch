@@ -126,7 +126,7 @@ async def jugatupunch(interaction: discord.Interaction):
             await interaction.response.send_message(f"JUGATU IS UNRANKED")
             return
         totalLp = TIER_LP[data["tier"]] + RANK_LP[data["rank"]] + data["leaguePoints"]
-        await interaction.response.send_message(f"JUGATU IS {data["tier"]} {data["rank"]} {data["leaguePoints"]} LP ({data["wins"]}-{data["losses"]})\n{JUGATU_LP_GOAL - totalLp} LP REMAINING")
+        await interaction.response.send_message(f"JUGATU IS {data['tier']} {data['rank']} {data['leaguePoints']} LP ({data['wins']}-{data['losses']})\n{JUGATU_LP_GOAL - totalLp} LP REMAINING")
     except requests.HTTPError as e:
         print("HTTP ERROR:", e, res.text)
         await interaction.response.send_message("JUGATU'S GONE")
@@ -162,7 +162,7 @@ async def jugatucheck():
             res.raise_for_status()
             elores = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{JUGATU_PUUID}", headers=HEADER)
             eloData = next((rank for rank in elores.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
-            eloResult = f"{eloData["tier"]} {eloData["rank"]} {eloData["leaguePoints"]} LP ({eloData["wins"]}-{eloData["losses"]})"
+            eloResult = f"{eloData['tier']} {eloData['rank']} {eloData['leaguePoints']} LP ({eloData['wins']}-{eloData['losses']})"
             data = res.json()
             totalTime = data["info"]["gameDuration"]
             strTotalTime = secondStringDisplay(totalTime)
@@ -173,7 +173,7 @@ async def jugatucheck():
             participate = next((participant for participant in data["info"]["participants"] if participant["puuid"] == JUGATU_PUUID), None)
             # hope it doesn't result with None
             win = participate["win"]
-            kda = f"{participate["kills"]}/{participate["deaths"]}/{participate["assists"]}"
+            kda = f"{participate['kills']}/{participate['deaths']}/{participate['assists']}"
             champion = participate["championName"]
             embed = discord.Embed(
                 title=("MATCH WON" if win else "MATCH LOSS"),
@@ -197,7 +197,7 @@ async def jugatucheck():
             timeStart = data["gameStartTime"] / 1000
             strTimeStart = datetime.fromtimestamp(timeStart).strftime("%I:%M:%S %p")
             participant = next((participant for participant in data["participants"] if participant["puuid"] == JUGATU_PUUID))
-            champion = CHAMPION_ID[f"{participant["championId"]}"]
+            champion = CHAMPION_ID[f"{participant['championId']}"]
             embed = discord.Embed(
                 title="MATCH IN SESSION",
                 description=f"{strTimeStart}\n{MESSAGE_TAUNT[1][random.randint(0,2)]}",
