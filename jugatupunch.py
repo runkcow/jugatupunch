@@ -6,8 +6,8 @@ import discord
 from discord.ext import tasks
 from typing import Optional
 
-from datetime import datetime
-from zoneinfo import ZoneInfo
+# from datetime import datetime
+# from zoneinfo import ZoneInfo
 import random
 import json
 
@@ -25,7 +25,7 @@ MATCH_HISTORY_ID = 1420647209468166174
 JUGATU_PUUID = "_F146yiCz2CqL5rRj2KmPpOu6qHhOQX_URjHQsNEYPnYHyM0E1GcgnqZdN_lRI-2AsNjrCTH-o0UOA"
 JUGATU_NAME = "白蟹翡翠王"
 JUGATU_TAG = "6 7"
-BEENAN_BET = datetime(2025, 9, 12, 18, 38, tzinfo=ZoneInfo("America/New_York"))
+# BEENAN_BET = datetime(2025, 9, 12, 18, 38, tzinfo=ZoneInfo("America/New_York"))
 JUGATU_LP_GOAL = 3000
 
 intents = discord.Intents.default()
@@ -56,10 +56,10 @@ CHAMPION_ID = json.load(open("championID.json", "r"))
 # useless test command
 @tree.command(name="test", description="test random", guilds=GUILD_LIST)
 async def test(interaction: discord.Interaction):
-    start = datetime.fromtimestamp(1758834195, tz=ZoneInfo("America/New_York")).strftime("%H:%M:%S")
+    start = 1758834195
     embed = discord.Embed(
         title="Jugatu Punch",
-        description=f"START: {start}",
+        description=f"START: <t:{start}:t>",
         colour=5763719,
     )
     # embed = discord.Embed(
@@ -78,7 +78,7 @@ def secondStringDisplay(seconds):
 
 @tree.command(name="money", description="where's my money?", guilds=GUILD_LIST)
 async def money(interaction: discord.Interaction):
-    await interaction.response.send_message(f"<@{BEENAN_ID}> hasn't paid for {(datetime.now(ZoneInfo("America/New_York")) - BEENAN_BET).days} days...")
+    await interaction.response.send_message(f"<@{BEENAN_ID}> hasn't paid for <t:1757716680:R> days...")
 
 TIER_LP = {
     "IRON"     : 0,
@@ -154,10 +154,10 @@ async def jugatucheck():
             data = res.json()
             totalTime = data["info"]["gameDuration"]
             strTotalTime = secondStringDisplay(totalTime)
-            timeStart = data["info"]["gameCreation"] / 1000
-            strTimeStart = datetime.fromtimestamp(timeStart, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
-            timeStart = data["info"]["gameEndTimestamp"] / 1000
-            strTimeEnd = datetime.fromtimestamp(timeStart, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
+            timeStart = data["info"]["gameCreation"]
+            # strTimeStart = datetime.fromtimestamp(timeStart / 1000, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
+            timeEnd = data["info"]["gameEndTimestamp"]
+            # strTimeEnd = datetime.fromtimestamp(timeEnd / 1000, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
             participate = next((participant for participant in data["info"]["participants"] if participant["puuid"] == JUGATU_PUUID), None)
             # hope it doesn't result with None
             win = participate["win"]
@@ -165,7 +165,8 @@ async def jugatucheck():
             champion = participate["championName"]
             embed = discord.Embed(
                 title=("MATCH WON" if win else "MATCH LOSS"),
-                description=f"{eloResult}\n{strTotalTime}\n{strTimeStart} - {strTimeEnd}\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
+                description=f"{eloResult}\n{strTotalTime}\n<t:{timeStart}:t> - <t:{timeEnd}:t>\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
+                # description=f"{eloResult}\n{strTotalTime}\n{strTimeStart} - {strTimeEnd}\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
                 colour=(3447003 if win else 15548997)
             )
             embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{champion}.png")
@@ -183,12 +184,11 @@ async def jugatucheck():
         data = res.json()
         if (config["match_id"] == None):
             timeStart = data["gameStartTime"] / 1000
-            strTimeStart = datetime.fromtimestamp(timeStart, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
             participant = next((participant for participant in data["participants"] if participant["puuid"] == JUGATU_PUUID))
             champion = CHAMPION_ID[f"{participant['championId']}"]
             embed = discord.Embed(
                 title="MATCH IN SESSION",
-                description=f"{strTimeStart}\n{MESSAGE_TAUNT[1][random.randint(0,2)]}",
+                description=f"<t:{timeStart}:t>\n{MESSAGE_TAUNT[1][random.randint(0,2)]}",
                 colour=5763719
             )
             embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{champion}.png")
