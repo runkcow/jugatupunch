@@ -4,11 +4,10 @@ import os
 from discord import app_commands
 import discord
 from discord.ext import tasks
-
-# from flask import Flask
-# from threading import Thread
+from typing import Optional
 
 from datetime import datetime
+from datetime import timedelta
 import random
 from enum import Enum
 import json
@@ -23,6 +22,7 @@ RAT_GUILD_ID = 909589494490087494
 BEENAN_ID = 207672531585466369
 COW_ID = 334315992694128652
 EMO_ID = 760609035346247710
+MATCH_HISTORY_ID = 1420647209468166174
 JUGATU_PUUID = "_F146yiCz2CqL5rRj2KmPpOu6qHhOQX_URjHQsNEYPnYHyM0E1GcgnqZdN_lRI-2AsNjrCTH-o0UOA"
 JUGATU_NAME = "白蟹翡翠王"
 JUGATU_TAG = "6 7"
@@ -37,20 +37,8 @@ tree = app_commands.CommandTree(client)
 
 GUILD_LIST = [discord.Object(id=RAT_GUILD_ID), discord.Object(id=MEOW_GUILD_ID)]
 
-# app = Flask('')
-
-# @app.route('/')
-# def home():
-#     return "Bot is running!"
-
-# def run():
-#     app.run(host='0.0.0.0', port=8080)
-
-# def keep_alive():
-#     t = Thread(target=run)
-#     t.start()
-
 CONFIG_FILE = "config.json"
+CHAMPION_THUMBNAIL_URL = "https://ddragon.leagueoflegends.com/cdn/15.19.1/img/champion/"
 
 def load_config():
     try:
@@ -64,12 +52,30 @@ def save_config(config):
         json.dump(config, f, indent=4)
 
 config = load_config()
+CHAMPION_ID = json.load(open("championID.json", "r"))
 
 # useless test command
 @tree.command(name="test", description="test random", guilds=GUILD_LIST)
 async def test(interaction: discord.Interaction):
-    str = f"test: {random.randint(0, 9)}"
-    await interaction.response.send_message(str)
+    start = datetime.fromtimestamp(1758834195).strftime("%H:%M:%S")
+    embed = discord.Embed(
+        title="Jugatu Punch",
+        description=f"START: {start}",
+        colour=5763719,
+    )
+    # embed = discord.Embed(
+    #     title="Jugatu Punch",
+    #     description=""
+    #     colour=3447003,
+    #     # colour=15548997,
+    # )
+    embed.set_thumbnail(url="https://ddragon.leagueoflegends.com/cdn/15.19.1/img/champion/Aatrox.png")
+    await interaction.response.send_message(embed=embed)
+
+# converts seconds to MM:SS
+def secondStringDisplay(seconds):
+    m, s = divmod(seconds, 60)
+    return f"{m:02}:{s:02}"
 
 # irrelevant nickname updating function that might get removed in the future
 # @tasks.loop(hours=24)
@@ -117,7 +123,10 @@ async def jugatupunch(interaction: discord.Interaction):
     res = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{JUGATU_PUUID}", headers=HEADER)
     try:
         res.raise_for_status()
-        data = res.json()[0]
+        data = next((rank for rank in res.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
+        if (data == None):
+            await interaction.response.send_message(f"JUGATU IS UNRANKED")
+            return
         totalLp = TIER_LP[data["tier"]] + RANK_LP[data["rank"]] + data["leaguePoints"]
         await interaction.response.send_message(f"JUGATU IS {data["tier"]} {data["rank"]} {data["leaguePoints"]} LP ({data["wins"]}-{data["losses"]})\n{JUGATU_LP_GOAL - totalLp} LP REMAINING")
     except requests.HTTPError as e:
@@ -131,12 +140,109 @@ async def jugatupunch(interaction: discord.Interaction):
 #     save_config(config)
 #     await interaction.response.send_message("Jugatu now breathes in {channel.mention}")
 
+MESSAGE_TAUNT = [
+    ["JUGATUPUNCH!! He survives yet another day in the swamp of saucelo!",
+    "JUGATUPUNCH!! Our white warrior prevails against SaurusNA once again!",
+    "JUGATUPUNCH!! Jugatu figured out how to pull back his axes! SaurusNA!"],
+    ["JugatuPunching...... He is currently fighting against the boxes of juice right now",
+    "JugatuPunching...... The EMERALDKING is in the midst of battle against those banished from the lands of emerald",
+    "JugatuPunching...... Jugatu is mid-pulling back his axes right now... Please try again later "],
+    ["jugatupunch...... The EMERALDKING has lost this round against the invaders of sauce but... he will rise again",
+    "jugatupunch...... Caseygg's little juggy wuggy is down for the count but Serenity Snow will help him recover",
+    "jugatupunch...... Fuck... Jungle diff... Supp dif... fucking retards"],
+]
+
+# periodically check if jugaking is in-game 
+@tasks.loop(minutes=1)
+async def jugatucheck():
+    HEADER = { 'X-Riot-Token': API_KEY }
+    channel = client.get_guild(MEOW_GUILD_ID).get_channel(MATCH_HISTORY_ID)
+    
+    async def updateTrackedMessage():
+        res = requests.get(f"https://americas.api.riotgames.com/lol/match/v5/matches/NA1_{config["match_id"]}", headers=HEADER)
+        try:
+            res.raise_for_status()
+            data = res.json()
+            totalTime = data["info"]["gameDuration"]
+            strTotalTime = secondStringDisplay(totalTime)
+            timeStart = data["info"]["gameCreation"] / 1000
+            strTimeStart = datetime.fromtimestamp(timeStart).strftime("%I:%M:%S %p")
+            timeStart = data["info"]["gameEndTimestamp"] / 1000
+            strTimeEnd = datetime.fromtimestamp(timeStart).strftime("%I:%M:%S %p")
+            participate = next((participant for participant in data["info"]["participants"] if participant["puuid"] == JUGATU_PUUID), None)
+            # hope it doesn't result with None
+            win = participate["win"]
+            kda = f"{participate["kills"]}/{participate["deaths"]}/{participate["assists"]}"
+            champion = participate["championName"]
+            embed = discord.Embed(
+                title=("MATCH WON" if win else "MATCH LOSS"),
+                description=f"{strTotalTime}\n{strTimeStart} - {strTimeEnd}\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
+                colour=(3447003 if win else 15548997)
+            )
+            embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{champion}.png")
+            msg = await channel.fetch_message(config["tracked_message_id"])
+            await msg.edit(embed=embed)
+            config["tracked_message_id"] = None
+            config["match_id"] = None
+            save_config(config)
+        except requests.HTTPError as e:
+            print("HTTP ERROR:", e, res.text)
+
+    res = requests.get(f"https://na1.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/{JUGATU_PUUID}", headers=HEADER)
+
+    if (res.status_code == 200):
+        data = res.json()
+        if (config["match_id"] == None):
+            timeStart = data["gameStartTime"] / 1000
+            strTimeStart = datetime.fromtimestamp(timeStart).strftime("%I:%M:%S %p")
+            participant = next((participant for participant in data["participants"] if participant["puuid"] == JUGATU_PUUID))
+            champion = CHAMPION_ID[f"{participant["championId"]}"]
+            embed = discord.Embed(
+                title="MATCH IN SESSION",
+                description=f"{strTimeStart}\n{MESSAGE_TAUNT[1][random.randint(0,2)]}",
+                colour=5763719
+            )
+            embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{champion}.png")
+            msg = await channel.send(embed=embed)
+            config["tracked_message_id"] = msg.id
+            config["match_id"] = data["gameId"]
+            save_config(config)
+        elif (config["match_id"] != data["gameId"]):
+            print(config["match_id"])
+            print(data["gameId"])
+            await updateTrackedMessage()
+    elif (res.status_code == 404):
+        if (config["tracked_message_id"] != None):
+            await updateTrackedMessage()
+    else:
+        res.raise_for_status()
+
+@tree.command(name="jugatuhere", description="jugatuhere", guilds=GUILD_LIST)
+@app_commands.describe(
+    jugatupunch="jugatupunch",
+    battlebus="battlebus",
+    jungler="jungler",
+    serenity="serenity",
+    baobao="baobao"
+)
+async def jugatuhere(
+    interaction: discord.Interaction, 
+    jugatupunch: Optional[str] = "Jugatupunch", 
+    battlebus: Optional[str] = "battle bus", 
+    jungler: Optional[str] ="jungler", 
+    serenity: Optional[str] = "Serenity", 
+    baobao: Optional[str] = "Baobao"
+):
+    str = f"**{jugatupunch}:** {jugatupunch} here.\n\n        *You've got the wrong {battlebus}..*\n\n**{jugatupunch}:** I knew my {jungler} was retarded..\n\n        *Okay, so you're looking for a {jugatupunch}?*\n\n**{jugatupunch}:** No, I am {jugatupunch}. I'm here for uh.. **{serenity}**.\n\n        *Yeah, you've got the wrong {battlebus}.*\n\n**{jugatupunch}:** ...So you're not gonna have sex tonight.\n\n        *Uh sir, I've got a **{baobao}** in the living room with his penis out!*\n\n**{jugatupunch}:** Huh..Okay, understood."
+    await interaction.response.send_message(str)
+
 # ready
 @client.event
 async def on_ready():
     # await update_nickname()
     # update_nickname.start()
-    # await tree.sync()
+    await jugatucheck()
+    jugatucheck.start()
     for g in client.guilds:
         await tree.sync(guild=g)
     print(f"Logged in as {client.user}")
