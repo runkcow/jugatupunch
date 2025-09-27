@@ -6,8 +6,6 @@ import discord
 from discord.ext import tasks
 from typing import Optional
 
-# from datetime import datetime
-# from zoneinfo import ZoneInfo
 import math
 import random
 import json
@@ -115,7 +113,7 @@ async def jugatupunch(interaction: discord.Interaction):
             await interaction.response.send_message(f"JUGATU IS UNRANKED")
             return
         totalLp = TIER_LP[data["tier"]] + RANK_LP[data["rank"]] + data["leaguePoints"]
-        await interaction.response.send_message(f"JUGATU IS {data['tier']} {data['rank']} {data['leaguePoints']} LP ({data['wins']}-{data['losses']})\n{JUGATU_LP_GOAL - totalLp} LP REMAINING")
+        await interaction.response.send_message(f"JUGATU IS {data['tier']} {data['rank']} {data['leaguePoints']} LP ({data['wins']}-{data['losses']})\n{JUGATU_LP_GOAL - totalLp} LP REMAINING\n<#{MATCH_HISTORY_ID}>")
     except requests.HTTPError as e:
         print("HTTP ERROR:", e, res.text)
         await interaction.response.send_message("JUGATU'S GONE")
@@ -166,7 +164,7 @@ async def jugatucheck():
             kda = f"{participate['kills']}/{participate['deaths']}/{participate['assists']}"
             champion = participate["championName"]
             embed = discord.Embed(
-                title=f"MATCH {"WIN" if win else "LOSS"} {totalLp - config["jugatu_total_lp"]} LP",
+                title=f"MATCH {"WON" if win else "LOSS"} {totalLp - config["jugatu_total_lp"]} LP",
                 description=f"{eloResult}\n{strTotalTime}\n<t:{timeStart}:t> - <t:{timeEnd}:t>\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
                 # description=f"{eloResult}\n{strTotalTime}\n{strTimeStart} - {strTimeEnd}\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
                 colour=(3447003 if win else 15548997)
