@@ -307,7 +307,7 @@ async def printconfig(interaction: discord.Interaction):
     if (interaction.user.id not in [MY_ID]):
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
     else:
-        await interaction.response.send_message(f"```\n{json.dumps(config, indent=4)}\n```")
+        await interaction.response.send_message(f"Sending config.json", ephemeral=True, file=discord.File("config.json"))
 
 # infrequently update username and tags
 @tasks.loop(hours=24)
