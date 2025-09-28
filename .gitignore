@@ -1,5 +1,6 @@
 bot-env/
 *.env
 *.pem
+*.bak
 __pycache__/
 *.pyc

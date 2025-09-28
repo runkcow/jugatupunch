@@ -12,9 +12,9 @@
         "oI7HAHlRVlEPStyQ7tbSsbzCD2tjfK_k3Bz2nt6HS76RiNoVtDWBaTB13R3rzsyAW1SgoKEw_XPSOQ": {
             "owner": "jugatu",
             "lp": 2320,
-            "message_id": 1421653215732170784,
-            "match_id": 5378914223,
-            "active": true,
+            "message_id": null,
+            "match_id": null,
+            "active": false,
             "username": "Duvy",
             "tag": "jug"
         }
@@ -32,12 +32,17 @@
                 "in_session": [
                     "JugatuPunching...... He is currently fighting against the boxes of juice right now",
                     "JugatuPunching...... The EMERALDKING is in the midst of battle against those banished from the lands of emerald",
-                    "JugatuPunching...... Jugatu is mid-pulling back his axes right now... Please try again later "
+                    "JugatuPunching...... Jugatu is mid-pulling back his axes right now... Please try again later ",
+                    "JugatuPunching...... Our little Draven OTP is receiving head from Caseygg right now sorry... Please wait your turn.",
+                    "JugatuPunching...... The EMERALDKING is hosting a meet and greet gangbang with his loyal retards in emeraldland right now... VIPS only sorry.",
+                    "JugatuPunching...... Sorry Jugatu is still waiting for his Diana to carry... Oh! He's about to lose shortly."
                 ],
                 "loss": [
                     "jugatupunch...... The EMERALDKING has lost this round against the invaders of sauce but... he will rise again",
                     "jugatupunch...... Caseygg's little juggy wuggy is down for the count but Serenity Snow will help him recover",
-                    "jugatupunch...... Fuck... Jungle diff... Supp dif... fucking retards"
+                    "jugatupunch...... Fuck... Jungle diff... Supp dif... fucking retards",
+                    "jugatupunch...... Draven is so bad man fuck... always sup gap too... ;(",
+                    "jugatupunch...... Jugatu couldn't hold it in due to Caseygg's insane grip strength.. HE LOST!!!"
                 ]
             },
             "output_channel_id": 1420647209468166174

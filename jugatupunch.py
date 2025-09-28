@@ -139,7 +139,7 @@ async def addaccount(interaction: discord.Interaction, username: str, tag: str, 
             data = res.json()
             puuid = data["puuid"]
             eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
-            eloData = eloRes.json()
+            eloData = next((rank for rank in eloRes.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
             totalLp = TIER_LP[eloData["tier"]] + RANK_LP[eloData["rank"]] + eloData["leaguePoints"]
             config["accounts"][puuid] = {
                 "owner": owner,
@@ -301,6 +301,14 @@ async def displaytauntmessages(interaction: discord.Interaction, player: str):
                 responseStr += f"{taunt}\n"
         await interaction.response.send_message(responseStr, ephemeral=True)
 
+# command to display config contents
+@tree.command(name="printconfig", description="Prints config.json", guilds=GUILD_LIST)
+async def printconfig(interaction: discord.Interaction):
+    if (interaction.user.id not in [MY_ID]):
+        await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
+    else:
+        await interaction.response.send_message(f"```\n{json.dumps(config, indent=4)}\n```")
+
 # infrequently update username and tags
 @tasks.loop(hours=24)
 async def updateAccountDetails():
@@ -376,7 +384,7 @@ async def checkplayers():
                 appropriateMessage = config["players"][owner]["taunt_message"]["in_session"]
                 accName = f"{config['accounts'][puuid]['username']} #{config['accounts'][puuid]['tag']}"
                 elores = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
-                eloData = elores.json()
+                eloData = next((rank for rank in elores.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
                 eloDisplay = f"{eloData['tier']} {eloData['rank']} {eloData['leaguePoints']} LP ({eloData['wins']}-{eloData['losses']})"
                 embed = discord.Embed(
                     title="MATCH IN SESSION",
