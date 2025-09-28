@@ -1,5 +1,61 @@
 {
-    "tracked_message_id": null,
-    "match_id": null,
-    "jugatu_total_lp": 2000
+    "accounts": {
+        "_F146yiCz2CqL5rRj2KmPpOu6qHhOQX_URjHQsNEYPnYHyM0E1GcgnqZdN_lRI-2AsNjrCTH-o0UOA": {
+            "owner": "jugatu",
+            "lp": 2000,
+            "message_id": null,
+            "match_id": null,
+            "active": false,
+            "username": "\u767d\u87f9\u7fe1\u7fe0\u738b",
+            "tag": "6 7"
+        },
+        "oI7HAHlRVlEPStyQ7tbSsbzCD2tjfK_k3Bz2nt6HS76RiNoVtDWBaTB13R3rzsyAW1SgoKEw_XPSOQ": {
+            "owner": "jugatu",
+            "lp": 2320,
+            "message_id": 1421653215732170784,
+            "match_id": 5378914223,
+            "active": true,
+            "username": "Duvy",
+            "tag": "jug"
+        }
+    },
+    "players": {
+        "jugatu": {
+            "lp_goal": 3000,
+            "taunt_message": {
+                "won": [
+                    "JUGATUPUNCH!! He survives yet another day in the swamp of saucelo!",
+                    "JUGATUPUNCH!! Our white warrior prevails against SaurusNA once again!",
+                    "JUGATUPUNCH!! Jugatu figured out how to pull back his axes! SaurusNA!",
+                    "JUGATUPUNCH!! Jugatu evaded Drew and Baobao's attempts to queuesnipe and RAPE him!! No rape today!! Unlucky!!!"
+                ],
+                "in_session": [
+                    "JugatuPunching...... He is currently fighting against the boxes of juice right now",
+                    "JugatuPunching...... The EMERALDKING is in the midst of battle against those banished from the lands of emerald",
+                    "JugatuPunching...... Jugatu is mid-pulling back his axes right now... Please try again later "
+                ],
+                "loss": [
+                    "jugatupunch...... The EMERALDKING has lost this round against the invaders of sauce but... he will rise again",
+                    "jugatupunch...... Caseygg's little juggy wuggy is down for the count but Serenity Snow will help him recover",
+                    "jugatupunch...... Fuck... Jungle diff... Supp dif... fucking retards"
+                ]
+            },
+            "output_channel_id": 1420647209468166174
+        },
+        "baobao": {
+            "lp_goal": 0,
+            "taunt_message": {
+                "won": [
+                    ""
+                ],
+                "in session": [
+                    ""
+                ],
+                "loss": [
+                    ""
+                ]
+            },
+            "output_channel_id": null
+        }
+    }
 }

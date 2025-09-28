@@ -15,17 +15,24 @@ import requests
 load_dotenv(dotenv_path="key.env")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 API_KEY = os.getenv("API_KEY")
+HEADER = { 'X-Riot-Token': API_KEY }
 MEOW_GUILD_ID = 415003906951610378
 RAT_GUILD_ID = 909589494490087494
+MY_ID = 334315992694128652
+BAOBAO_ID = 760330889762308134
 BEENAN_ID = 207672531585466369
-COW_ID = 334315992694128652
-EMO_ID = 760609035346247710
-MATCH_HISTORY_ID = 1420647209468166174
-JUGATU_PUUID = "_F146yiCz2CqL5rRj2KmPpOu6qHhOQX_URjHQsNEYPnYHyM0E1GcgnqZdN_lRI-2AsNjrCTH-o0UOA"
-JUGATU_NAME = "白蟹翡翠王"
-JUGATU_TAG = "6 7"
+JUGATU_ID = 1057114471983743057
+
+# test variables
+# COW_ID = 334315992694128652
+# EMO_ID = 760609035346247710
+
+# 白蟹翡翠王 #6 7
+# JUGATU_PUUID = "_F146yiCz2CqL5rRj2KmPpOu6qHhOQX_URjHQsNEYPnYHyM0E1GcgnqZdN_lRI-2AsNjrCTH-o0UOA"
+# JUGATU_NAME = "白蟹翡翠王"
+# JUGATU_TAG = "6 7"
 # BEENAN_BET = datetime(2025, 9, 12, 18, 38, tzinfo=ZoneInfo("America/New_York"))
-JUGATU_LP_GOAL = 3000
+# JUGATU_LP_GOAL = 3000
 
 intents = discord.Intents.default()
 intents.guilds = True
@@ -55,20 +62,10 @@ CHAMPION_ID = json.load(open("championID.json", "r"))
 # useless test command
 @tree.command(name="test", description="test random", guilds=GUILD_LIST)
 async def test(interaction: discord.Interaction):
-    start = 1758834195
-    embed = discord.Embed(
-        title="Jugatu Punch",
-        description=f"START: <t:{start}:t>",
-        colour=5763719,
-    )
-    # embed = discord.Embed(
-    #     title="Jugatu Punch",
-    #     description=""
-    #     colour=3447003,
-    #     # colour=15548997,
-    # )
-    embed.set_thumbnail(url="https://ddragon.leagueoflegends.com/cdn/15.19.1/img/champion/Aatrox.png")
-    await interaction.response.send_message(embed=embed)
+    if (interaction.user.id == MY_ID):
+        await interaction.response.send_message("Hello RatStretcher")
+    else:
+        await interaction.response.send_message("Who the fuck are you?")
 
 # converts seconds to MM:SS
 def secondStringDisplay(seconds):
@@ -77,7 +74,7 @@ def secondStringDisplay(seconds):
 
 @tree.command(name="money", description="where's my money?", guilds=GUILD_LIST)
 async def money(interaction: discord.Interaction):
-    await interaction.response.send_message(f"<@{BEENAN_ID}> hasn't paid for <t:1757716680:R> days...")
+    await interaction.response.send_message(f"<@{BEENAN_ID}> should've paid <t:1757716680:R>...")
 
 TIER_LP = {
     "IRON"     : 0,
@@ -97,114 +94,310 @@ RANK_LP = {
     "IV"  : 0
 }
 
+# unnecessary bet explanation command
 @tree.command(name="jugatbet", description="gat", guilds=GUILD_LIST)
 async def jugatbet(interaction: discord.Interaction):
     await interaction.response.send_message("Jugatu has made a bet with his master and overlord drbaobaomd for $100 CAD that he will be able to reach the astounding lp measurements of master 200lp by the end of the 2025 league of legends rank season est. date december 9th. Therefore the young white warrior is on his way to sweat his ass off thru the depths of iron 4 lp(he chose to start there, hesRegarded) and the swamps of saucelo and he is forced to stream it for the young baobao and not deafen him hahaha...")
 
 # JUGATU PUNCH!
-@tree.command(name="jugatupunch", description="Jugatu remaining LP", guilds=GUILD_LIST)
-async def jugatupunch(interaction: discord.Interaction):
-    HEADER = { 'X-Riot-Token': API_KEY }
-    res = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{JUGATU_PUUID}", headers=HEADER)
-    try:
-        res.raise_for_status()
-        data = next((rank for rank in res.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
-        if (data == None):
-            await interaction.response.send_message(f"JUGATU IS UNRANKED")
-            return
-        totalLp = TIER_LP[data["tier"]] + RANK_LP[data["rank"]] + data["leaguePoints"]
-        await interaction.response.send_message(f"JUGATU IS {data['tier']} {data['rank']} {data['leaguePoints']} LP ({data['wins']}-{data['losses']})\n{JUGATU_LP_GOAL - totalLp} LP REMAINING\n<#{MATCH_HISTORY_ID}>")
-    except requests.HTTPError as e:
-        print("HTTP ERROR:", e, res.text)
-        await interaction.response.send_message("JUGATU'S GONE")
+# checks remaining lp of a player, temporary function, main function should display rank of a player
+@tree.command(name="jugatupunch", description="Who is who?", guilds=GUILD_LIST)
+@app_commands.describe(player="noob")
+@app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"].keys()])
+async def jugatupunch(interaction: discord.Interaction, player: Optional[str] = "jugatu"):
+    respondStr = ""
+    for puuid in config["accounts"]:
+        if (config["accounts"][puuid]["owner"] != player):
+            continue
+        res = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
+        if (res.status_code == 200):
+            data = next((rank for rank in res.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
+            if (data == None):
+                respondStr += f"{player.upper()} IS UNRANKED"
+                return
+            totalLp = TIER_LP[data["tier"]] + RANK_LP[data["rank"]] + data["leaguePoints"]
+            accName = f"{config['accounts'][puuid]['username']} #{config['accounts'][puuid]['tag']}"
+            respondStr += f"{accName} IS {data['tier']} {data['rank']} {data['leaguePoints']} LP ({data['wins']}-{data['losses']})\n{config['players'][player]['lp_goal'] - totalLp} LP REMAINING\n"
+            config["accounts"][puuid]["lp"] = totalLp
+            save_config(config)
+        else:
+            print(f"RECEIVED STATUS CODE {res.status_code} IN jugatupunch")
+            respondStr += f"{player.upper()}'S GONE"
+    respondStr += f"<#{config['players'][player]['output_channel_id']}>"
+    await interaction.response.send_message(respondStr)
 
-# target chat
-# @tree.command(name="wherejugatu", description="Relocates which channel Jugatu speaks in", guilds=GUILD_LIST)
-# async def wherejugatu(interaction: discord.Interaction, channel: discord.TextChannel):
-#     config["channelID"] = channel.id
-#     save_config(config)
-#     await interaction.response.send_message("Jugatu now breathes in {channel.mention}")
-
-MESSAGE_TAUNT = [
-    ["JUGATUPUNCH!! He survives yet another day in the swamp of saucelo!",
-    "JUGATUPUNCH!! Our white warrior prevails against SaurusNA once again!",
-    "JUGATUPUNCH!! Jugatu figured out how to pull back his axes! SaurusNA!"],
-    ["JugatuPunching...... He is currently fighting against the boxes of juice right now",
-    "JugatuPunching...... The EMERALDKING is in the midst of battle against those banished from the lands of emerald",
-    "JugatuPunching...... Jugatu is mid-pulling back his axes right now... Please try again later "],
-    ["jugatupunch...... The EMERALDKING has lost this round against the invaders of sauce but... he will rise again",
-    "jugatupunch...... Caseygg's little juggy wuggy is down for the count but Serenity Snow will help him recover",
-    "jugatupunch...... Fuck... Jungle diff... Supp dif... fucking retards"],
-]
-
-# periodically check if jugaking is in-game 
-@tasks.loop(minutes=1)
-async def jugatucheck():
-    HEADER = { 'X-Riot-Token': API_KEY }
-    channel = client.get_guild(MEOW_GUILD_ID).get_channel(MATCH_HISTORY_ID)
-    
-    async def updateTrackedMessage():
-        res = requests.get(f"https://americas.api.riotgames.com/lol/match/v5/matches/NA1_{config['match_id']}", headers=HEADER)
-        try:
-            res.raise_for_status()
-            elores = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{JUGATU_PUUID}", headers=HEADER)
-            eloData = next((rank for rank in elores.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
-            eloResult = f"{eloData['tier']} {eloData['rank']} {eloData['leaguePoints']} LP ({eloData['wins']}-{eloData['losses']})"
+# command to add accounts
+@tree.command(name="addaccount", description="Add accounts to track", guilds=GUILD_LIST)
+@app_commands.describe(username="Account username", tag="Account tag without '#'", owner="Account owner")
+@app_commands.choices(owner=[app_commands.Choice(name=k, value=k) for k in config["players"].keys()])
+async def addaccount(interaction: discord.Interaction, username: str, tag: str, owner: str):
+    if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
+        await interaction.response.send_message("Unauthorized use of command")
+    else:
+        res = requests.get(f"https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{username}/{tag}", headers=HEADER)
+        if (res.status_code == 200):
+            data = res.json()
+            puuid = data["puuid"]
+            eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
+            eloData = eloRes.json()
             totalLp = TIER_LP[eloData["tier"]] + RANK_LP[eloData["rank"]] + eloData["leaguePoints"]
+            config["accounts"][puuid] = {
+                "owner": owner,
+                "lp": totalLp,
+                "message_id": None,
+                "match_id": None,
+                "active": False,
+                "username": username,
+                "tag": tag
+            }
+            save_config(config)
+            await interaction.response.send_message(f"Succesfully added account {username} #{tag}", ephemeral=True)
+        elif (res.status_code == 404):
+            await interaction.response.send_message("Invalid username or tag", ephemeral=True)
+        else:
+            res.raise_for_status()
+            await interaction.response.send_message("Problem has occurred...", ephemeral=True)
+
+# command to remove accounts
+@tree.command(name="removeaccount", description="Remove an account from tracked list", guilds=GUILD_LIST)
+@app_commands.describe(account="Account name")
+@app_commands.choices(account=[app_commands.Choice(name=f"{value['username']} #{value['tag']}", value=puuid) for puuid, value in config["accounts"].items()])
+async def removeaccount(interaction: discord.Interaction, account: str):
+    if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
+        await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
+    else:
+        config["accounts"].pop(account)
+        save_config(config)
+        await interaction.response.send_message("Successfully removed account", ephemeral=True)
+
+# command to change account owner
+@tree.command(name="changeaccountowner", description="Change the owner of an account, manages which text channel tracked games output to", guilds=GUILD_LIST)
+@app_commands.describe(account="Account name", owner="Owner name")
+@app_commands.choices(
+    account=[app_commands.Choice(name=f"{value['username']} #{value['tag']}", value=puuid) for puuid, value in config["accounts"].items()],
+    owner=[app_commands.Choice(name=k, value=k) for k in config["players"]]
+)
+async def changeaccountowner(interaction: discord.Interaction, account: str, owner: str):
+    if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
+        await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
+    else:
+        config["accounts"][account]["owner"] = owner
+        save_config(config)
+        await interaction.response.send_message("Successfully changed owner", ephemeral=True)
+
+# command to add players
+@tree.command(name="addplayer", description="Add a player to listed owners", guilds=GUILD_LIST)
+@app_commands.describe(player="Name of player", outputchannel="Channel whose accounts under this player's name outputs to")
+async def addplayer(interaction: discord.Interaction, player: str, outputchannel: discord.TextChannel, lpgoal: Optional[int] = 0):
+    if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
+        await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
+    else:
+        config["players"][player] = {
+            "lp_goal": lpgoal,
+            "taunt_message": { "won": [], "in_session": [], "loss": [] },
+            "output_channel_id": outputchannel.id
+        }
+        save_config(config)
+        await interaction.response.send_message(f"Successfully added player {player}", ephemeral=True)
+
+# command to remove player
+@tree.command(name="removeplayer", description="Removes a player from owner list, impossible if an account is under this player's name", guilds=GUILD_LIST)
+@app_commands.describe(player="Player")
+@app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
+async def changeoutputchannel(interaction: discord.Interaction, player: str):
+    if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
+        await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
+    else:
+        accCheck = False
+        for k, v in config["accounts"].items():
+            if (v["owner"] == player):
+                accCheck = True
+        if accCheck:
+            await interaction.response.send_message("This player has an account, remove the account from tracking first", ephemeral=True)
+            return
+        config["players"].pop(player)
+        save_config(config)
+        await interaction.response.send_message(f"Successfully changed output channel of {player}", ephemeral=True)
+
+# command to change lp goal
+@tree.command(name="changelpgoal", description="Changes lp goal of a player", guilds=GUILD_LIST)
+@app_commands.describe(player="Player", lpgoal="New LP goal")
+@app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
+async def changeoutputchannel(interaction: discord.Interaction, player: str, lpgoal: int):
+    if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
+        await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
+    else:
+        config["players"][player]["lp_goal"] = lpgoal
+        save_config(config)
+        await interaction.response.send_message(f"Successfully changed LP goal of {player}", ephemeral=True)
+
+# command to change output channel of player
+@tree.command(name="changeoutputchannel", description="Changes output channel of a player", guilds=GUILD_LIST)
+@app_commands.describe(player="Player", channel="Channel")
+@app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
+async def changeoutputchannel(interaction: discord.Interaction, player: str, channel: discord.TextChannel):
+    if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
+        await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
+    else:
+        config["players"][player]["output_channel_id"] = channel.id
+        save_config(config)
+        await interaction.response.send_message("Successfully changed output channel", ephemeral=True)
+
+# command to add taunt messages
+@tree.command(name="addtauntmessage", description="Adds a taunt message", guilds=GUILD_LIST)
+@app_commands.describe(player="Player", category="Category", tauntmessage="New taunt message")
+@app_commands.choices(
+    player=[app_commands.Choice(name=k, value=k) for k in config["players"]],
+    category=[
+        app_commands.Choice(name="won", value="won"),
+        app_commands.Choice(name="in_session", value="in_session"),
+        app_commands.Choice(name="loss", value="loss")
+    ]
+)
+async def addtauntmessage(interaction: discord.Interaction, player: str, category: str, tauntmessage: str):
+    if (interaction.user.id not in [MY_ID, BAOBAO_ID]):
+        await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
+    else:
+        config["players"][player]["taunt_message"][category].append(tauntmessage)
+        save_config(config)
+        await interaction.response.send_message(f"Successfully added taunt message to {player}", ephemeral=True)
+
+def createTauntMessageDict():
+    dict = {}
+    for player in config["players"]:
+        for category in config["players"][player]["taunt_message"]:
+            for i in range(len(config["players"][player]["taunt_message"][category])):
+                taunt = config["players"][player]["taunt_message"][category][i]
+                dict[f"{player}.{category}.{i}"] = f"{player}.{category}.{taunt[:20]}"
+            # for taunt in config["players"][player]["taunt_message"][category]:
+            #     dict[f"{player}.{category}.{taunt}"] = f"{player}.{category}.{taunt[:20]}"
+    return dict
+
+# command to remove taunt messages
+@tree.command(name="removetauntmessage", description="Removes a taunt message", guilds=GUILD_LIST)
+@app_commands.describe(tauntmessage="Removed taunt message")
+@app_commands.choices(tauntmessage=[app_commands.Choice(name=v, value=k) for k,v in createTauntMessageDict().items()])
+async def removetauntmessage(interaction: discord.Interaction, tauntmessage: str):
+    if (interaction.user.id not in [MY_ID, BAOBAO_ID]):
+        await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
+    else:
+        [player, category, taunt] = tauntmessage.split(".")
+        config["players"][player]["taunt_message"][category].pop(int(taunt))
+        save_config(config)
+        await interaction.response.send_message(f"Successfully removed taunt message", ephemeral=True)
+
+# command to display all taunt messages
+@tree.command(name="displaytauntmessages", description="Displays all taunt messages", guilds=GUILD_LIST)
+@app_commands.describe(player="Specified player's taunt messages")
+@app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
+async def displaytauntmessages(interaction: discord.Interaction, player: str):
+    if (interaction.user.id not in [MY_ID, BAOBAO_ID]):
+        await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
+    else:
+        responseStr = ""
+        for category in config["players"][player]["taunt_message"]:
+            responseStr += f"{category.upper()}\n"
+            for taunt in config["players"][player]["taunt_message"][category]:
+                responseStr += f"{taunt}\n"
+        await interaction.response.send_message(responseStr, ephemeral=True)
+
+# infrequently update username and tags
+@tasks.loop(hours=24)
+async def updateAccountDetails():
+    for puuid in config["accounts"]:
+        res = requests.get(f"https://americas.api.riotgames.com/riot/account/v1/accounts/by-puuid/{puuid}", headers=HEADER)
+        if (res.status_code == 200):
+            data = res.json()
+            if (config["accounts"][puuid]["username"] != data["gameName"] or config["accounts"][puuid]["tag"] != data["tagLine"]):
+                config["accounts"][puuid]["username"] = data["gameName"]
+                config["accounts"][puuid]["tag"] = data["tagLine"]
+                save_config(config)
+        else:
+            res.raise_for_status()
+
+# periodically checks for players in-game
+@tasks.loop(minutes=1)
+async def checkplayers():
+    async def updateTrackedMessage(puuid):
+        owner = config["accounts"][puuid]["owner"]
+        res = requests.get(f"https://americas.api.riotgames.com/lol/match/v5/matches/NA1_{config['accounts'][puuid]['match_id']}", headers=HEADER)
+        try:
+            # match data
+            res.raise_for_status()
             data = res.json()
             totalTime = data["info"]["gameDuration"]
             strTotalTime = secondStringDisplay(totalTime)
             timeStart = math.floor(data["info"]["gameCreation"] / 1000)
-            # strTimeStart = datetime.fromtimestamp(timeStart / 1000, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
             timeEnd = math.floor(data["info"]["gameEndTimestamp"] / 1000)
-            # strTimeEnd = datetime.fromtimestamp(timeEnd / 1000, tz=ZoneInfo("America/New_York")).strftime("%I:%M:%S %p")
-            participate = next((participant for participant in data["info"]["participants"] if participant["puuid"] == JUGATU_PUUID), None)
-            # hope it doesn't result with None
-            win = participate["win"]
-            kda = f"{participate['kills']}/{participate['deaths']}/{participate['assists']}"
-            champion = participate["championName"]
+            participant = next((participant for participant in data["info"]["participants"] if participant["puuid"] == puuid), None)
+            win = participant["win"]
+            kda = f"{participant['kills']}/{participant['deaths']}/{participant['assists']}"
+            champion = participant["championName"]
+            # account name and tag
+            accName = f"{config['accounts'][puuid]['username']} #{config['accounts'][puuid]['tag']}"
+            # post match elo data
+            elores = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
+            eloData = next((rank for rank in elores.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
+            eloDisplay = f"{eloData['tier']} {eloData['rank']} {eloData['leaguePoints']} LP ({eloData['wins']}-{eloData['losses']})"
+            totalLp = TIER_LP[eloData["tier"]] + RANK_LP[eloData["rank"]] + eloData["leaguePoints"]
+            # embed
+            appropriateMessage = config["players"][owner]["taunt_message"]["won" if win else "loss"]
             embed = discord.Embed(
-                title=f"MATCH {"WON" if win else "LOSS"} {totalLp - config["jugatu_total_lp"]} LP",
-                description=f"{eloResult}\n{strTotalTime}\n<t:{timeStart}:t> - <t:{timeEnd}:t>\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
-                # description=f"{eloResult}\n{strTotalTime}\n{strTimeStart} - {strTimeEnd}\n{kda}\n{MESSAGE_TAUNT[0 if win else 2][random.randint(0,2)]}", # this hardcode randint is bad but i cba
+                title=f"MATCH {'WON' if win else 'LOSS'} {totalLp - config['accounts'][puuid]['lp']} LP",
+                description=f"{accName}\n{eloDisplay}\n{strTotalTime}\n<t:{timeStart}:t> - <t:{timeEnd}:t>\n{kda}\n{appropriateMessage[random.randint(0,len(appropriateMessage)-1)]}", # this hardcode randint is bad but i cba
                 colour=(3447003 if win else 15548997)
             )
             embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{champion}.png")
-            msg = await channel.fetch_message(config["tracked_message_id"])
+            # edit existing message
+            msg = await client.get_guild(MEOW_GUILD_ID).get_channel(config["players"][owner]["output_channel_id"]).fetch_message(config["accounts"][puuid]["message_id"])
             await msg.edit(embed=embed)
-            config["tracked_message_id"] = None
-            config["match_id"] = None
-            config["jugatu_total_lp"] = totalLp
+            # save config
+            config["accounts"][puuid]["lp"] = totalLp
+            config["accounts"][puuid]["message_id"] = None
+            config["accounts"][puuid]["match_id"] = None
+            config["accounts"][puuid]["active"] = False
             save_config(config)
         except requests.HTTPError as e:
             print("HTTP ERROR:", e, res.text)
 
-    res = requests.get(f"https://na1.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/{JUGATU_PUUID}", headers=HEADER)
+    for puuid in config["accounts"]:
+        owner = config["accounts"][puuid]["owner"]
+        res = requests.get(f"https://na1.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/{puuid}", headers=HEADER)
+        if (res.status_code == 200):
+            data = res.json()
+            # if there was an existing unrelated game that was active
+            if (config["accounts"][puuid]["active"] and config["accounts"][puuid]["match_id"] != data["gameId"]):
+                await updateTrackedMessage(puuid)
+            # new match started with no corresponding message
+            if (config["accounts"][puuid]["match_id"] == None):
+                timeStart = math.floor(data["gameStartTime"] / 1000)
+                participant = next((participant for participant in data["participants"] if participant["puuid"] == puuid))
+                champion = CHAMPION_ID[f"{participant['championId']}"]
+                appropriateMessage = config["players"][owner]["taunt_message"]["in_session"]
+                accName = f"{config['accounts'][puuid]['username']} #{config['accounts'][puuid]['tag']}"
+                elores = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
+                eloData = elores.json()
+                eloDisplay = f"{eloData['tier']} {eloData['rank']} {eloData['leaguePoints']} LP ({eloData['wins']}-{eloData['losses']})"
+                embed = discord.Embed(
+                    title="MATCH IN SESSION",
+                    description=f"{accName}\n{eloDisplay}\n<t:{timeStart}:t>\n{appropriateMessage[random.randint(0,len(appropriateMessage)-1)]}",
+                    colour=5763719
+                )
+                embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{champion}.png")
+                msg = await client.get_guild(MEOW_GUILD_ID).get_channel(config["players"][owner]["output_channel_id"]).send(embed=embed)
+                # save config
+                config["accounts"][puuid]["message_id"] = msg.id
+                config["accounts"][puuid]["match_id"] = data["gameId"]
+                config["accounts"][puuid]["active"] = True
+                save_config(config)
+        # update tracked message if there is no active game and tracked message exists
+        elif (res.status_code == 404):
+            if (config["accounts"][puuid]["active"]):
+                await updateTrackedMessage(puuid)
+        else:
+            res.raise_for_status()
 
-    if (res.status_code == 200):
-        data = res.json()
-        if (config["match_id"] == None):
-            timeStart = math.floor(data["gameStartTime"] / 1000)
-            participant = next((participant for participant in data["participants"] if participant["puuid"] == JUGATU_PUUID))
-            champion = CHAMPION_ID[f"{participant['championId']}"]
-            embed = discord.Embed(
-                title="MATCH IN SESSION",
-                description=f"<t:{timeStart}:t>\n{MESSAGE_TAUNT[1][random.randint(0,2)]}",
-                colour=5763719
-            )
-            embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{champion}.png")
-            msg = await channel.send(embed=embed)
-            config["tracked_message_id"] = msg.id
-            config["match_id"] = data["gameId"]
-            save_config(config)
-        elif (config["match_id"] != data["gameId"]):
-            await updateTrackedMessage()
-    elif (res.status_code == 404):
-        if (config["tracked_message_id"] != None):
-            await updateTrackedMessage()
-    else:
-        res.raise_for_status()
-
+# unnecessary copypasta command
 @tree.command(name="jugatuhere", description="jugatuhere", guilds=GUILD_LIST)
 @app_commands.describe(
     jugatupunch="jugatupunch",
@@ -229,8 +422,9 @@ async def jugatuhere(
 async def on_ready():
     # await update_nickname()
     # update_nickname.start()
-    await jugatucheck()
-    jugatucheck.start()
+    await checkplayers()
+    checkplayers.start()
+    updateAccountDetails.start()
     for g in client.guilds:
         await tree.sync(guild=g)
     print(f"Logged in as {client.user}")
