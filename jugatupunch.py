@@ -99,6 +99,27 @@ RANK_LP = {
 async def jugatbet(interaction: discord.Interaction):
     await interaction.response.send_message("Jugatu has made a bet with his master and overlord drbaobaomd for $100 CAD that he will be able to reach the astounding lp measurements of master 200lp by the end of the 2025 league of legends rank season est. date december 9th. Therefore the young white warrior is on his way to sweat his ass off thru the depths of iron 4 lp(he chose to start there, hesRegarded) and the swamps of saucelo and he is forced to stream it for the young baobao and not deafen him hahaha...")
 
+# command to change bot profile picture
+@tree.context_menu(name="JUGATUPUNCH!", guilds=GUILD_LIST)
+async def makepfp(interaction: discord.Interaction, message: discord.Message):
+    if not message.attachments: 
+        await interaction.response.send_message("who?", ephemeral=True)
+        return
+    file = message.attachments[0] 
+    if not file.filename.lower().endswith((".png", ".jpeg")):
+        await interaction.response.send_message("i can't", ephemeral=True) 
+        return
+    try: 
+        img = await file.read()
+        await client.user.edit(avatar=img) 
+        await interaction.response.send_message("we are here", ephemeral=True) 
+    except discord.HTTPException as e: 
+        if e.status == 429:
+            await interaction.response.send_message("outagas", ephemeral=True)
+        else:
+            await interaction.response.send_message("aw shit something blew up", ephemeral=True)
+            print("HTTP ERROR:", e)
+
 # JUGATU PUNCH!
 # checks remaining lp of a player, temporary function, main function should display rank of a player
 @tree.command(name="jugatupunch", description="Who is who?", guilds=GUILD_LIST)
@@ -268,9 +289,9 @@ def createTauntMessageDict():
         for category in config["players"][player]["taunt_message"]:
             for i in range(len(config["players"][player]["taunt_message"][category])):
                 taunt = config["players"][player]["taunt_message"][category][i]
-                dict[f"{player}.{category}.{i}"] = f"{player}.{category}.{taunt[:20]}"
-            # for taunt in config["players"][player]["taunt_message"][category]:
-            #     dict[f"{player}.{category}.{taunt}"] = f"{player}.{category}.{taunt[:20]}"
+                dispStr = f"{player}.{category}.{taunt}"
+                dict[f"{player}.{category}.{i}"] = f"{dispStr[:30]}"
+                # dict[f"{player}.{category}.{i}"] = f"{player}.{category}.{taunt[:20]}"
     return dict
 
 # command to remove taunt messages
@@ -428,8 +449,6 @@ async def jugatuhere(
 # ready
 @client.event
 async def on_ready():
-    # await update_nickname()
-    # update_nickname.start()
     await checkplayers()
     checkplayers.start()
     updateAccountDetails.start()
