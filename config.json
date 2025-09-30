@@ -11,12 +11,39 @@
         },
         "oI7HAHlRVlEPStyQ7tbSsbzCD2tjfK_k3Bz2nt6HS76RiNoVtDWBaTB13R3rzsyAW1SgoKEw_XPSOQ": {
             "owner": "jugatu",
-            "lp": 2336,
+            "lp": 2419,
+            "message_id": 1422433281231556648,
+            "match_id": 5381516615,
+            "active": true,
+            "username": "Duvy",
+            "tag": "jug"
+        },
+        "rFBApeJ4mfOKuGRjyjEXckRtY2UxL5yEfCSY0qBvbS1-U1NiyqJm1J-kOT3cD37YvmI_1j1yAijZDw": {
+            "owner": "baobao",
+            "lp": 2375,
+            "message_id": 1422433283408396319,
+            "match_id": 5381516615,
+            "active": true,
+            "username": "DR BAOBAO MD",
+            "tag": "GOAT"
+        },
+        "dSf-8szm2ntwBBNBY7UA_aEN9HoVShVm4ggSKxjmv90M0ZV4HPU7CkTifrVaPeapy8jpoEx1HyN84w": {
+            "owner": "serenity",
+            "lp": 583,
+            "message_id": 1422432782101123187,
+            "match_id": 5381517837,
+            "active": true,
+            "username": "Serenity Snow",
+            "tag": "NA1"
+        },
+        "dyUg-U7VSIpOPRxqAgayhOmSt7OfTx4NZVR9v-FxDjj789eXmeGfnVPSCEadLbMLKA8kB5UUzzl_QA": {
+            "owner": "baobao",
+            "lp": 2340,
             "message_id": null,
             "match_id": null,
             "active": false,
-            "username": "Duvy",
-            "tag": "jug"
+            "username": "pszfanboi",
+            "tag": "NA1"
         }
     },
     "players": {
@@ -44,25 +71,35 @@
                     "jugatupunch...... Fuck... Jungle diff... Supp dif... fucking retards",
                     "jugatupunch...... Draven is so bad man fuck... always sup gap too... ;(",
                     "jugatupunch...... Jugatu couldn't hold it in due to Caseygg's insane grip strength.. HE LOST!!!",
-                    "jugatupunch...... Jugatu misclicked and took the wrong runes again... NO HOB NO WIN!!"
+                    "jugatupunch...... Jugatu misclicked and took the wrong runes again... NO HOB NO WIN!!",
+                    "jugatupunch...... Jugatu lost because he got filled... not the roles, but his insides."
                 ]
             },
             "output_channel_id": 1420647209468166174
         },
         "baobao": {
-            "lp_goal": 0,
+            "lp_goal": 3800,
             "taunt_message": {
                 "won": [
-                    ""
+                    "holy fuck bankai baobao fucked the neighbors once again"
                 ],
-                "in session": [
-                    ""
+                "in_session": [
+                    "right now, bko bao is 1v9'ing the jugatukings"
                 ],
                 "loss": [
-                    ""
+                    "lost against 70 avg iq low masta players, fraud exposed!"
                 ]
             },
-            "output_channel_id": null
+            "output_channel_id": 1420647209468166174
+        },
+        "serenity": {
+            "lp_goal": 800,
+            "taunt_message": {
+                "won": [],
+                "in_session": [],
+                "loss": []
+            },
+            "output_channel_id": 1420647209468166174
         }
     }
 }
