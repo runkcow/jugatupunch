@@ -1,10 +1,9 @@
-https://developer.riotgames.com/docs/lol
-add teamPosition detection: UTILITY, BOTTOM, MIDDLE, JUNGLE, TOP (might not be possible)
 add dodge tracking (registered players only) check for lp lost when a game hasn't been played (-5, -15, -15)
+rework checkplayer, remove duplicate code
+add team position using online ML based detection
 add ranked flex lp 
 add audio recording to bot
 jugatu bingo
 send gif when jugatu's kda is below 1
-https://media.discordapp.net/attachments/415003906951610380/1084345493267685476/IMG_8505.gif?ex=68dac02f&is=68d96eaf&hm=bb3b7f330858da9c732aa78f2b4d517d5ba630f02ec0b9d32b66a216d7832ce1&
-store last rank tier and division within config that gets updated by jugatupunch to save api calls
+store last rank tier and division within config that gets updated by jugatupunch to save api calls (?)
 create an image representing which items and runes player went after game ends

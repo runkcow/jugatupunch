@@ -432,13 +432,16 @@ async def checkplayers():
                     team = 0 if p["teamId"] == 100 else 1
                     riotId = f"{p['riotIdGameName']}#{p['riotIdTagline']}"
                     playerDict[team][riotId] = {}
-                    playerDict[team][riotId]["champion"] = CHAMPION_ID[str(p["championId"])]
-                    strLen[0] = max(strLen[0], len(CHAMPION_ID[str(p["championId"])]))
+                    playerDict[team][riotId]["champion"] = CHAMPION_ID[str(p["championId"])] + ("*" if p["puuid"] == puuid else "")
+                    strLen[0] = max(strLen[0], len(playerDict[team][riotId]["champion"]))
                     strLen[1] = max(strLen[1], len(riotId))
                     eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{p['puuid']}", headers=HEADER)
                     eloData = next((rank for rank in eloRes.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
-                    winRate = int(100 * eloData["wins"] / (eloData["wins"] + eloData["losses"]))
-                    playerDict[team][riotId]["rank"] = f"{eloData['tier'][0]}{RANK_NUMERICAL[eloData['rank']]} {eloData['leaguePoints']:>2}LP - {winRate}% / {eloData["wins"]}W {eloData["losses"]}L"
+                    if (eloData != None):
+                        winRate = int(100 * eloData["wins"] / (eloData["wins"] + eloData["losses"]))
+                        playerDict[team][riotId]["rank"] = f"{eloData['tier'][0]}{RANK_NUMERICAL[eloData['rank']]} {eloData['leaguePoints']:>2}LP - {winRate}% / {eloData["wins"]}W {eloData["losses"]}L"
+                    else:
+                        playerDict[team][p["riotId"]]["rank"] = "No Data"
                     if (p["puuid"] == puuid):
                         newTotalLp = TIER_LP[eloData["tier"]] + RANK_LP[eloData["rank"]] + eloData["leaguePoints"]
                         titleStr += f" {newTotalLp - config["accounts"][puuid]["lp"]} LP"
@@ -446,7 +449,8 @@ async def checkplayers():
                 for t in range(len(playerDict)):
                     descStr += f"\n{'Blue' if t == 0 else 'Red'}"
                     for n, p in playerDict[t].items():
-                        descStr += f"\n{p["champion"]:{strLen[0]}} {n:{strLen[1]}}\n└ {p["rank"]}"
+                        descStr += f"\n{p["champion"]:{strLen[0]}} {p["rank"]}"
+                        # descStr += f"\n{p["champion"]:{strLen[0]}} {n:{strLen[1]}}\n└ {p["rank"]}"
                 descStr += "\n```"
             # add taunt messages if they exist
             tauntArr = config["players"][owner]["taunt_message"]["won" if win else "loss"]
@@ -495,17 +499,21 @@ async def checkplayers():
                     for p in data["participants"]:
                         team = 0 if p["teamId"] == 100 else 1
                         playerDict[team][p["riotId"]] = {}
-                        playerDict[team][p["riotId"]]["champion"] = CHAMPION_ID[str(p['championId'])]
-                        strLen[0] = max(strLen[0], len(CHAMPION_ID[str(p["championId"])]))
+                        playerDict[team][p["riotId"]]["champion"] = CHAMPION_ID[str(p['championId'])] + ("*" if p["puuid"] == puuid else "")
+                        strLen[0] = max(strLen[0], len(playerDict[team][p["riotId"]]["champion"]))
                         strLen[1] = max(strLen[1], len(p["riotId"]))
                         eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{p['puuid']}", headers=HEADER)
                         eloData = next((rank for rank in eloRes.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
-                        winRate = int(100 * eloData["wins"] / (eloData["wins"] + eloData["losses"]))
-                        playerDict[team][p["riotId"]]["rank"] = f"{eloData['tier'][0]}{RANK_NUMERICAL[eloData['rank']]} {eloData['leaguePoints']:>2}LP - {winRate}% / {eloData["wins"]}W {eloData["losses"]}L"
+                        if (eloData != None):
+                            winRate = int(100 * eloData["wins"] / (eloData["wins"] + eloData["losses"]))
+                            playerDict[team][p["riotId"]]["rank"] = f"{eloData['tier'][0]}{RANK_NUMERICAL[eloData['rank']]} {eloData['leaguePoints']:>2}LP - {winRate}% / {eloData["wins"]}W {eloData["losses"]}L"
+                        else:
+                            playerDict[team][p["riotId"]]["rank"] = "No Data"
                     for t in range(len(playerDict)):
                         descStr += f"\n{'Blue' if t == 0 else 'Red'}"
                         for n, p in playerDict[t].items():
-                            descStr += f"\n{p["champion"]:{strLen[0]}} {n:{strLen[1]}}\n└ {p["rank"]}"
+                            descStr += f"\n{p["champion"]:{strLen[0]}} {p["rank"]}"
+                            # descStr += f"\n{p["champion"]:{strLen[0]}} {n:{strLen[1]}}\n└ {p["rank"]}"
                     descStr += "\n```"
                 # add taunt if exists
                 tauntArr = config["players"][owner]["taunt_message"]["in_session"]
