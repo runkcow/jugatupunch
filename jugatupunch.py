@@ -398,6 +398,59 @@ async def updateAccountDetails():
         else:
             res.raise_for_status()
 
+# Builds embeds with given information
+# result is None if game is not finished, otherwise, states whether the player's associated team won or lost
+# riotId is simply the riot id, i.e. W31RDCH0MP#smile
+# championId is the associated player's champion ID
+# time contains the start and end time of the game
+# queueId contains the id of the queue type
+# postGameData contains various other information like kda, largest crit strike, damage per kill
+# teamData contains the elo data of the player's teammates, however, it will be None, if the game is not ranked
+# tauntMessage contains a random taunt message from config
+def gameEmbedBuilder(result: bool, riotId: str, championId: int, time: dict, queueId: int, postGameData: dict, teamData: list, tauntMessage: str):
+    titleStr = "MATCH IN SESSION" if result == None else "MATCH WON" if result else "MATCH LOSS"
+    descStr = f"{riotId}"
+    if (time["end"] != None):
+        descStr += f"\n{secondStringDisplay((time['end']-time['start']))}"
+        descStr += f"\n<t:{time['start']}:t> - <t:{time['end']}:t>"
+    else:
+        descStr += f"\n<t:{time['start']}:t>"
+    if (result != None):
+        titleStr += f" {postGameData['lpDiff']} LP"
+        descStr += f"\nKDA: {postGameData['kills']}/{postGameData['deaths']}/{postGameData['assists']}"
+        descStr += f"\nDPK: {postGameData['totalDamageDealtToChampions'] // postGameData['kills']}"
+        descStr += f"\nLGS: {postGameData['largestCriticalStrike']}"
+    descStr += f"\n{QUEUE_ID[queueId]}"
+    if (queueId == 420): # if the queue is 5v5 ranked
+        strLen = [0, 0, 0]
+        for t in range(len(teamData)):
+            for p in teamData[t]:
+                if (p["championId"] == championId):
+                    strLen[0] = max(strLen[0], len(CHAMPION_ID[str(p["championId"])])+1)
+                else:
+                    strLen[0] = max(strLen[0], len(CHAMPION_ID[str(p["championId"])]))
+                strLen[1] = max(strLen[1], len(str(p["wins"])))
+                strLen[2] = max(strLen[2], len(str(p["losses"])))
+        descStr += f"\n```"
+        for t in range(len(teamData)):
+            descStr += f"\n{'BLUE' if t == 0 else 'RED'}"
+            for p in teamData[t]:
+                championStr = CHAMPION_ID[str(p["championId"])] + ("*" if p["championId"] == championId else "")
+                if (p['tier'] != None):
+                    descStr += f"\n{championStr:{strLen[0]}} {p['tier'][0]}{RANK_NUMERICAL[p['rank']]} {p['lp']:>2}LP - {(100 * p['wins']) // (p['wins'] + p['losses'])}% / {p['wins']:>{strLen[1]}}W {p['losses']:>{strLen[2]}}L"
+                else:
+                    descStr += f"\n{championStr:{strLen[0]}} No Data"
+        descStr += f"\n```"
+    if (tauntMessage != None):
+        descStr += f"{tauntMessage}"
+    embed = discord.Embed(
+        title=titleStr,
+        description=descStr,
+        colour=5763719 if result == None else 3447003 if result else 15548997
+    )
+    embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{CHAMPION_ID[str(championId)]}.png")
+    return embed
+
 # periodically checks for players in-game
 @tasks.loop(minutes=1)
 async def checkplayers():
@@ -405,72 +458,68 @@ async def checkplayers():
         owner = config["accounts"][puuid]["owner"]
         res = requests.get(f"https://americas.api.riotgames.com/lol/match/v5/matches/NA1_{config['accounts'][puuid]['match_id']}", headers=HEADER)
         try:
-            # match data and correct participate data
             res.raise_for_status()
             data = res.json()
-            participant = next((participant for participant in data["info"]["participants"] if participant["puuid"] == puuid), None)
-            # initialize title, desc, get basic data
-            win = participant["win"]
-            titleStr = f"MATCH {'WON' if win else 'LOSS'}"
-            descStr = f"{config['accounts'][puuid]['username']} #{config['accounts'][puuid]['tag']}" # name
-            kda = f"{participant['kills']}/{participant['deaths']}/{participant['assists']}"
-            champion = participant["championName"]
-            # add duration of game
-            totalTime = data["info"]["gameDuration"]
-            strTotalTime = secondStringDisplay(totalTime)
-            timeStart = math.floor(data["info"]["gameCreation"] / 1000)
-            timeEnd = math.floor(data["info"]["gameEndTimestamp"] / 1000)
-            descStr += f"\n{strTotalTime}\n<t:{timeStart}:t> - <t:{timeEnd}:t>\n{kda}"
-            # display gamemode
-            descStr += f"\n{QUEUE_ID[data["info"]["queueId"]]}"
-            # if playing ranked, display winrate data of all players in the game
+            player = next((p for p in data["info"]["participants"] if p["puuid"] == puuid), None)
+            lpDiff = None
             if (data["info"]["queueId"] == 420):
-                descStr += "\n```"
-                playerDict = [{}, {}]
-                strLen = [0, 0]
-                for p in data["info"]["participants"]:
-                    team = 0 if p["teamId"] == 100 else 1
-                    riotId = f"{p['riotIdGameName']}#{p['riotIdTagline']}"
-                    playerDict[team][riotId] = {}
-                    playerDict[team][riotId]["champion"] = CHAMPION_ID[str(p["championId"])] + ("*" if p["puuid"] == puuid else "")
-                    strLen[0] = max(strLen[0], len(playerDict[team][riotId]["champion"]))
-                    strLen[1] = max(strLen[1], len(riotId))
-                    eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{p['puuid']}", headers=HEADER)
+                teamData = [[], []]
+                for p in range(len(data["info"]["participants"])):
+                    pDict = data["info"]["participants"][p]
+                    team = 0 if pDict["teamId"] == 100 else 1
+                    eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{pDict['puuid']}", headers=HEADER)
                     eloData = next((rank for rank in eloRes.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
                     if (eloData != None):
-                        winRate = int(100 * eloData["wins"] / (eloData["wins"] + eloData["losses"]))
-                        playerDict[team][riotId]["rank"] = f"{eloData['tier'][0]}{RANK_NUMERICAL[eloData['rank']]} {eloData['leaguePoints']:>2}LP - {winRate}% / {eloData["wins"]}W {eloData["losses"]}L"
+                        teamData[team].append({
+                            "championId" : pDict["championId"],
+                            "tier"       : eloData["tier"],
+                            "rank"       : eloData["rank"],
+                            "lp"         : eloData["leaguePoints"],
+                            "wins"       : eloData["wins"],
+                            "losses"     : eloData["losses"]
+                        })
                     else:
-                        playerDict[team][p["riotId"]]["rank"] = "No Data"
-                    if (p["puuid"] == puuid):
-                        newTotalLp = TIER_LP[eloData["tier"]] + RANK_LP[eloData["rank"]] + eloData["leaguePoints"]
-                        titleStr += f" {newTotalLp - config["accounts"][puuid]["lp"]} LP"
-                        config["accounts"][puuid]["lp"] = newTotalLp
-                for t in range(len(playerDict)):
-                    descStr += f"\n{'Blue' if t == 0 else 'Red'}"
-                    for n, p in playerDict[t].items():
-                        descStr += f"\n{p["champion"]:{strLen[0]}} {p["rank"]}"
-                        # descStr += f"\n{p["champion"]:{strLen[0]}} {n:{strLen[1]}}\n└ {p["rank"]}"
-                descStr += "\n```"
-            # add taunt messages if they exist
-            tauntArr = config["players"][owner]["taunt_message"]["won" if win else "loss"]
+                        teamData[team].append({
+                            "championId" : pDict["championId"],
+                            "tier"       : None,
+                            "rank"       : None,
+                            "lp"         : None,
+                            "wins"       : 0,
+                            "losses"     : 0
+                        })
+                    if (pDict["puuid"] == puuid):
+                        newLp = TIER_LP[eloData["tier"]] + RANK_LP[eloData["rank"]] + eloData["leaguePoints"]
+                        lpDiff = newLp - config["accounts"][puuid]["lp"]
+                        config["accounts"][puuid]["lp"] = newLp
+            tauntArr = config["players"][owner]["taunt_message"]["won" if player["win"] else "loss"]
+            tauntMessage = None
             if (len(tauntArr) > 0):
-                descStr += f"\n{tauntArr[random.randint(0,len(tauntArr)-1)]}"
-            # embed
-            embed = discord.Embed(
-                title=titleStr,
-                description=descStr,
-                colour=(3447003 if win else 15548997)
+                tauntMessage = tauntArr[random.randint(0,len(tauntArr)-1)]
+            embed = gameEmbedBuilder(
+                player["win"], 
+                f"{player['riotIdGameName']}#{player['riotIdTagline']}", 
+                player["championId"], 
+                { "start": data["info"]["gameStartTimestamp"] // 1000, "end": data["info"]["gameEndTimestamp"] // 1000 },
+                data["info"]["queueId"],
+                { 
+                    "lpDiff": lpDiff, 
+                    "kills": player["kills"], 
+                    "deaths": player["deaths"], 
+                    "assists": player["assists"], 
+                    "totalDamageDealtToChampions": player["totalDamageDealtToChampions"], 
+                    "largestCriticalStrike": player["largestCriticalStrike"] 
+                },
+                teamData,
+                tauntMessage
             )
-            embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{champion}.png")
-            # edit existing message
             msg = await client.get_guild(MEOW_GUILD_ID).get_channel(config["players"][owner]["output_channel_id"]).fetch_message(config["accounts"][puuid]["message_id"])
             await msg.edit(embed=embed)
-            # save config
+            
             config["accounts"][puuid]["message_id"] = None
             config["accounts"][puuid]["match_id"] = None
             config["accounts"][puuid]["active"] = False
             save_config(config)
+            
         except requests.HTTPError as e:
             print("HTTP ERROR:", e, res.text)
 
@@ -479,55 +528,53 @@ async def checkplayers():
         res = requests.get(f"https://na1.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/{puuid}", headers=HEADER)
         if (res.status_code == 200):
             data = res.json()
-            # if there was an existing unrelated game that was active
             if (config["accounts"][puuid]["active"] and config["accounts"][puuid]["match_id"] != data["gameId"]):
                 await updateTrackedMessage(puuid)
-            # new match started with no corresponding message
             if (config["accounts"][puuid]["match_id"] == None):
-                participant = next((participant for participant in data["participants"] if participant["puuid"] == puuid))
-                champion = CHAMPION_ID[str(participant['championId'])]
-                descStr = f"{config['accounts'][puuid]['username']} #{config['accounts'][puuid]['tag']}"
-                # time
-                timeStart = math.floor(data["gameStartTime"] / 1000)
-                descStr += f"\n<t:{timeStart}:t>"
-                # add elo if necessary
-                descStr += f"\n{QUEUE_ID[data["gameQueueConfigId"]]}"
+                player = next((p for p in data["participants"] if p["puuid"] == puuid))
+                # duplicate code from updateTrackedMessage()
                 if (data["gameQueueConfigId"] == 420):
-                    descStr += "\n```"
-                    playerDict = [{}, {}]
-                    strLen = [0, 0]
-                    for p in data["participants"]:
-                        team = 0 if p["teamId"] == 100 else 1
-                        playerDict[team][p["riotId"]] = {}
-                        playerDict[team][p["riotId"]]["champion"] = CHAMPION_ID[str(p['championId'])] + ("*" if p["puuid"] == puuid else "")
-                        strLen[0] = max(strLen[0], len(playerDict[team][p["riotId"]]["champion"]))
-                        strLen[1] = max(strLen[1], len(p["riotId"]))
-                        eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{p['puuid']}", headers=HEADER)
+                    teamData = [[], []]
+                    for p in range(len(data["participants"])):
+                        pDict = data["participants"][p]
+                        team = 0 if pDict["teamId"] == 100 else 1
+                        eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{pDict['puuid']}", headers=HEADER)
                         eloData = next((rank for rank in eloRes.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
                         if (eloData != None):
-                            winRate = int(100 * eloData["wins"] / (eloData["wins"] + eloData["losses"]))
-                            playerDict[team][p["riotId"]]["rank"] = f"{eloData['tier'][0]}{RANK_NUMERICAL[eloData['rank']]} {eloData['leaguePoints']:>2}LP - {winRate}% / {eloData["wins"]}W {eloData["losses"]}L"
+                            teamData[team].append({
+                                "championId" : pDict["championId"],
+                                "tier"       : eloData["tier"],
+                                "rank"       : eloData["rank"],
+                                "lp"         : eloData["leaguePoints"],
+                                "wins"       : eloData["wins"],
+                                "losses"     : eloData["losses"]
+                            })
                         else:
-                            playerDict[team][p["riotId"]]["rank"] = "No Data"
-                    for t in range(len(playerDict)):
-                        descStr += f"\n{'Blue' if t == 0 else 'Red'}"
-                        for n, p in playerDict[t].items():
-                            descStr += f"\n{p["champion"]:{strLen[0]}} {p["rank"]}"
-                            # descStr += f"\n{p["champion"]:{strLen[0]}} {n:{strLen[1]}}\n└ {p["rank"]}"
-                    descStr += "\n```"
-                # add taunt if exists
+                            teamData[team].append({
+                                "championId" : pDict["championId"],
+                                "tier"       : None,
+                                "rank"       : None,
+                                "lp"         : None,
+                                "wins"       : 0,
+                                "losses"     : 0
+                            })
+                # end of duplicate code
                 tauntArr = config["players"][owner]["taunt_message"]["in_session"]
+                tauntMessage = None
                 if (len(tauntArr) > 0):
-                    descStr += f"\n{tauntArr[random.randint(0,len(tauntArr)-1)]}"
-                # add embed
-                embed = discord.Embed(
-                    title="MATCH IN SESSION",
-                    description=descStr,
-                    colour=5763719
+                    tauntMessage = f"\n{tauntArr[random.randint(0,len(tauntArr)-1)]}"
+                embed = gameEmbedBuilder(
+                    None, 
+                    player["riotId"], 
+                    player["championId"], 
+                    { "start": data["gameStartTime"] // 1000, "end": None },
+                    data["gameQueueConfigId"],
+                    None,
+                    teamData,
+                    tauntMessage
                 )
-                embed.set_thumbnail(url=f"{CHAMPION_THUMBNAIL_URL}{champion}.png")
                 msg = await client.get_guild(MEOW_GUILD_ID).get_channel(config["players"][owner]["output_channel_id"]).send(embed=embed)
-                # save config
+                
                 config["accounts"][puuid]["message_id"] = msg.id
                 config["accounts"][puuid]["match_id"] = data["gameId"]
                 config["accounts"][puuid]["active"] = True
