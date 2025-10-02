@@ -9,7 +9,7 @@ from typing import Optional
 import math
 import random
 import json
-from PIL import Image, ImageDraw, ImageFont
+# from PIL import Image, ImageDraw, ImageFont
 
 import io
 import requests
