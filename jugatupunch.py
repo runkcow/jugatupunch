@@ -491,6 +491,8 @@ async def checkplayers():
                         newLp = TIER_LP[eloData["tier"]] + RANK_LP[eloData["rank"]] + eloData["leaguePoints"]
                         lpDiff = newLp - config["accounts"][puuid]["lp"]
                         config["accounts"][puuid]["lp"] = newLp
+            else:
+                teamData = None
             tauntArr = config["players"][owner]["taunt_message"]["won" if player["win"] else "loss"]
             tauntMessage = None
             if (len(tauntArr) > 0):
@@ -558,6 +560,8 @@ async def checkplayers():
                                 "wins"       : 0,
                                 "losses"     : 0
                             })
+                else:
+                    teamData = None
                 # end of duplicate code
                 tauntArr = config["players"][owner]["taunt_message"]["in_session"]
                 tauntMessage = None
