@@ -416,15 +416,16 @@ def gameEmbedBuilder(result: bool, riotId: str, championId: int, time: dict, que
     else:
         descStr += f"\n<t:{time['start']}:t>"
     if (result != None):
-        titleStr += f" {postGameData['lpDiff']} LP"
         descStr += f"\nKDA: {postGameData['kills']}/{postGameData['deaths']}/{postGameData['assists']}"
         if (postGameData["kills"] > 0):
             descStr += f"\nDPK: {postGameData['totalDamageDealtToChampions'] // postGameData['kills']}"
         else:
             descStr += f"\nDPK: infinity"
         descStr += f"\nLGS: {postGameData['largestCriticalStrike']}"
-    descStr += f"\n{QUEUE_ID[queueId]}"
+    descStr += f"\n{QUEUE_ID[queueId]}\n"
     if (queueId == 420): # if the queue is 5v5 ranked
+        if (result != None):
+            titleStr += f" {postGameData['lpDiff']} LP"
         strLen = [0, 0, 0]
         for t in range(len(teamData)):
             for p in teamData[t]:
@@ -434,7 +435,7 @@ def gameEmbedBuilder(result: bool, riotId: str, championId: int, time: dict, que
                     strLen[0] = max(strLen[0], len(CHAMPION_ID[str(p["championId"])]))
                 strLen[1] = max(strLen[1], len(str(p["wins"])))
                 strLen[2] = max(strLen[2], len(str(p["losses"])))
-        descStr += f"\n```"
+        descStr += f"```"
         for t in range(len(teamData)):
             descStr += f"\n{'BLUE' if t == 0 else 'RED'}"
             for p in teamData[t]:
