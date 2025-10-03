@@ -11,10 +11,10 @@
         },
         "oI7HAHlRVlEPStyQ7tbSsbzCD2tjfK_k3Bz2nt6HS76RiNoVtDWBaTB13R3rzsyAW1SgoKEw_XPSOQ": {
             "owner": "jugatu",
-            "lp": 2514,
-            "message_id": 1423434338921611347,
-            "match_id": 5383857493,
-            "active": true,
+            "lp": 2474,
+            "message_id": null,
+            "match_id": null,
+            "active": false,
             "username": "Duvy",
             "tag": "jug"
         },
@@ -29,10 +29,10 @@
         },
         "dSf-8szm2ntwBBNBY7UA_aEN9HoVShVm4ggSKxjmv90M0ZV4HPU7CkTifrVaPeapy8jpoEx1HyN84w": {
             "owner": "serenity",
-            "lp": 494,
-            "message_id": 1423434358114615307,
-            "match_id": 5383848707,
-            "active": true,
+            "lp": 472,
+            "message_id": null,
+            "match_id": null,
+            "active": false,
             "username": "Serenity Snow",
             "tag": "NA1"
         },
@@ -81,13 +81,16 @@
             "lp_goal": 3800,
             "taunt_message": {
                 "won": [
-                    "holy fuck bankai baobao fucked the neighbors once again"
+                    "holy fuck bankai baobao fucked the neighbors once again",
+                    "bko bao fucked the flash abusers using his ghost tp without a sweat, as expected of the C1 (CN#1) player"
                 ],
                 "in_session": [
-                    "right now, bko bao is 1v9'ing the jugatukings"
+                    "right now, bko bao is 1v9'ing the jugatukings",
+                    "baobaomd is currently performing bausen's law v0.8 in antarctica super server birchplank stairs elo"
                 ],
                 "loss": [
-                    "lost against 70 avg iq low masta players, fraud exposed!"
+                    "lost against 70 avg iq low masta players, fraud exposed!",
+                    "blud went 1/15/3, said team gap, then said he has the highest damage per kill on his team??"
                 ]
             },
             "output_channel_id": 1420647209468166174
@@ -95,9 +98,15 @@
         "serenity": {
             "lp_goal": 800,
             "taunt_message": {
-                "won": [],
-                "in_session": [],
-                "loss": []
+                "won": [
+                    "yagatu's $5 coaching would've made this game end faster"
+                ],
+                "in_session": [
+                    "yagatu's $5 coaching would greatly assist in a game like this"
+                ],
+                "loss": [
+                    "yagatu's $5 coaching would've saved this game"
+                ]
             },
             "output_channel_id": 1420647209468166174
         }

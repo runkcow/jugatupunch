@@ -351,10 +351,10 @@ async def removetauntmessage(interaction: discord.Interaction, player: str, cate
     else:
         length = len(config["players"][player]["taunt_message"][category])
         if (index < 0 or index >= length):
-            await interaction.response.send_message(f"Index not within range (0 - {length})")
+            await interaction.response.send_message(f"Index not within range (0 - {length})", ephemeral=True)
             return
         taunt = config["players"][player]["taunt_message"][category].pop(index)
-        await interaction.response.send_message(f"Removed taunt message: {taunt}")
+        await interaction.response.send_message(f"Removed taunt message: {taunt}", ephemeral=True)
 
 # command to display all taunt messages
 @tree.command(name="displaytauntmessages", description="Displays all taunt messages", guilds=GUILD_LIST)
