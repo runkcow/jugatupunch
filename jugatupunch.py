@@ -421,7 +421,7 @@ def gameEmbedBuilder(result: bool, riotId: str, championId: int, time: dict, que
             descStr += f"\nDPK: {postGameData['totalDamageDealtToChampions'] // postGameData['kills']}"
         else:
             descStr += f"\nDPK: infinity"
-        descStr += f"\nLGS: {postGameData['largestCriticalStrike']}"
+        descStr += f"\nLCS: {postGameData['largestCriticalStrike']}"
     descStr += f"\n{QUEUE_ID[queueId]}\n"
     if (queueId == 420): # if the queue is 5v5 ranked
         if (result != None):
