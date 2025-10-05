@@ -402,7 +402,36 @@ async def crossbingo(interaction: discord.Interaction, row: int, column: int, cr
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
         return
     config["bingo"][row][column]["cross"] = cross
+    msg = ""
+    if cross:
+        checkV = True
+        checkH = True
+        for i in range(5):
+            if not config["bingo"][i][column]["cross"]:
+                checkV = False
+            if not config["bingo"][row][i]["cross"]:
+                checkH = False
+        checkD = True
+        if row == column:
+            for i in range(5):
+                if not config["bingo"][i][i]["cross"]:
+                    checkD = False
+        if max(row, column) - min(row, column) == 4:
+            for i in range(5):
+                if not config["bingo"][i][4-i]["cross"]:
+                    checkD = False
+        if checkV or checkH or checkD:
+            msg = "JUGATU PUNCH!"
     save_config(config)
+    img = buildBingoImg()
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+    file = discord.File(buffer, filename="throw.png")
+    await interaction.response.send_message(msg, file=file)
+
+@tree.command(name="displaybingo", description="Displays the current bingo", guilds=GUILD_LIST)
+async def displaybingo(interaction: discord.Interaction):
     img = buildBingoImg()
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
@@ -464,6 +493,7 @@ def gameEmbedBuilder(result: bool, riotId: str, championId: int, time: dict, que
         for t in range(len(teamData)):
             for p in teamData[t]:
                 if (p["championId"] == championId):
+                    descStr += f"\n{p['tier']} {p['rank']} {p['lp']} LP"
                     strLen[0] = max(strLen[0], len(CHAMPION_ID[str(p["championId"])])+1)
                 else:
                     strLen[0] = max(strLen[0], len(CHAMPION_ID[str(p["championId"])]))
