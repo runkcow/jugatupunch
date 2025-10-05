@@ -119,19 +119,19 @@
     "bingo": [
         [
             {
-                "imgId": 2,
+                "imgId": 6,
                 "cross": false
             },
             {
-                "imgId": 37,
+                "imgId": 32,
                 "cross": false
             },
             {
-                "imgId": 0,
+                "imgId": 15,
                 "cross": false
             },
             {
-                "imgId": 30,
+                "imgId": 4,
                 "cross": false
             },
             {
@@ -145,59 +145,59 @@
                 "cross": false
             },
             {
-                "imgId": 19,
-                "cross": true
-            },
-            {
-                "imgId": 32,
-                "cross": true
-            },
-            {
-                "imgId": 11,
+                "imgId": 3,
                 "cross": false
             },
             {
-                "imgId": 20,
+                "imgId": 16,
+                "cross": false
+            },
+            {
+                "imgId": 14,
+                "cross": false
+            },
+            {
+                "imgId": 27,
                 "cross": false
             }
         ],
         [
             {
-                "imgId": 22,
-                "cross": false
-            },
-            {
-                "imgId": 31,
-                "cross": false
-            },
-            {
-                "imgId": 13,
-                "cross": false
-            },
-            {
-                "imgId": 6,
+                "imgId": 8,
                 "cross": false
             },
             {
                 "imgId": 35,
                 "cross": false
+            },
+            {
+                "imgId": 22,
+                "cross": false
+            },
+            {
+                "imgId": 29,
+                "cross": false
+            },
+            {
+                "imgId": 26,
+                "cross": false
             }
         ],
         [
             {
-                "imgId": 17,
+                "imgId": 28,
                 "cross": false
             },
             {
-                "imgId": 12,
+                "imgId": 21,
+                "cross": false
+            },
+            {
+                "imgId": 5,
                 "cross": false
             },
             {
                 "imgId": 7,
-                "cross": false
-            },
-            {
-                "imgId": 1,
                 "cross": false
             },
             {
@@ -207,24 +207,24 @@
         ],
         [
             {
-                "imgId": 4,
+                "imgId": 17,
                 "cross": false
             },
             {
-                "imgId": 25,
-                "cross": true
-            },
-            {
-                "imgId": 15,
+                "imgId": 11,
                 "cross": false
             },
             {
-                "imgId": 5,
-                "cross": true
+                "imgId": 20,
+                "cross": false
             },
             {
-                "imgId": 14,
-                "cross": true
+                "imgId": 0,
+                "cross": false
+            },
+            {
+                "imgId": 31,
+                "cross": false
             }
         ]
     ]

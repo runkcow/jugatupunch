@@ -415,20 +415,20 @@ async def crossbingo(interaction: discord.Interaction, row: int, column: int, cr
                 checkV = False
             if not config["bingo"][row][i]["cross"]:
                 checkH = False
-        if checkV or checkH or checkD:
+        if checkV or checkH:
             msg = "JUGATU PUNCH!"
         if row == column or max(row, column) - min(row, column):
             checkD = True
             for i in range(5):
                 if not config["bingo"][i][i]["cross"]:
                     checkD = False
-            if checkV or checkH or checkD:
+            if checkD:
                 msg = "JUGATU PUNCH!"
             checkD = True
             for i in range(5):
                 if not config["bingo"][i][4-i]["cross"]:
                     checkD = False
-            if checkV or checkH or checkD:
+            if checkD:
                 msg = "JUGATU PUNCH!"
     save_config(config)
     img = buildBingoImg()
