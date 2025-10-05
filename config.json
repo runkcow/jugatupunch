@@ -11,7 +11,7 @@
         },
         "oI7HAHlRVlEPStyQ7tbSsbzCD2tjfK_k3Bz2nt6HS76RiNoVtDWBaTB13R3rzsyAW1SgoKEw_XPSOQ": {
             "owner": "jugatu",
-            "lp": 2474,
+            "lp": 2434,
             "message_id": null,
             "match_id": null,
             "active": false,
@@ -29,10 +29,10 @@
         },
         "dSf-8szm2ntwBBNBY7UA_aEN9HoVShVm4ggSKxjmv90M0ZV4HPU7CkTifrVaPeapy8jpoEx1HyN84w": {
             "owner": "serenity",
-            "lp": 476,
-            "message_id": null,
-            "match_id": null,
-            "active": false,
+            "lp": 422,
+            "message_id": 1424244233354739738,
+            "match_id": 5385911797,
+            "active": true,
             "username": "Serenity Snow",
             "tag": "NA1"
         },
@@ -110,5 +110,117 @@
             },
             "output_channel_id": 1420647209468166174
         }
-    }
+    },
+    "bingo": [
+        [
+            {
+                "imgId": 15,
+                "cross": false
+            },
+            {
+                "imgId": 14,
+                "cross": false
+            },
+            {
+                "imgId": 8,
+                "cross": false
+            },
+            {
+                "imgId": 4,
+                "cross": false
+            },
+            {
+                "imgId": 6,
+                "cross": false
+            }
+        ],
+        [
+            {
+                "imgId": 22,
+                "cross": false
+            },
+            {
+                "imgId": 33,
+                "cross": false
+            },
+            {
+                "imgId": 30,
+                "cross": false
+            },
+            {
+                "imgId": 34,
+                "cross": false
+            },
+            {
+                "imgId": 12,
+                "cross": false
+            }
+        ],
+        [
+            {
+                "imgId": 2,
+                "cross": false
+            },
+            {
+                "imgId": 36,
+                "cross": false
+            },
+            {
+                "imgId": 11,
+                "cross": false
+            },
+            {
+                "imgId": 29,
+                "cross": false
+            },
+            {
+                "imgId": 17,
+                "cross": true
+            }
+        ],
+        [
+            {
+                "imgId": 21,
+                "cross": false
+            },
+            {
+                "imgId": 3,
+                "cross": false
+            },
+            {
+                "imgId": 31,
+                "cross": false
+            },
+            {
+                "imgId": 0,
+                "cross": false
+            },
+            {
+                "imgId": 25,
+                "cross": false
+            }
+        ],
+        [
+            {
+                "imgId": 23,
+                "cross": false
+            },
+            {
+                "imgId": 32,
+                "cross": false
+            },
+            {
+                "imgId": 35,
+                "cross": false
+            },
+            {
+                "imgId": 18,
+                "cross": false
+            },
+            {
+                "imgId": 1,
+                "cross": false
+            }
+        ]
+    ]
 }
