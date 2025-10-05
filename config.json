@@ -7,7 +7,8 @@
             "match_id": null,
             "active": false,
             "username": "\u767d\u87f9\u7fe1\u7fe0\u738b",
-            "tag": "6 7"
+            "tag": "6 7",
+            "region": "na1"
         },
         "oI7HAHlRVlEPStyQ7tbSsbzCD2tjfK_k3Bz2nt6HS76RiNoVtDWBaTB13R3rzsyAW1SgoKEw_XPSOQ": {
             "owner": "jugatu",
@@ -16,7 +17,8 @@
             "match_id": null,
             "active": false,
             "username": "Duvy",
-            "tag": "jug"
+            "tag": "jug",
+            "region": "na1"
         },
         "rFBApeJ4mfOKuGRjyjEXckRtY2UxL5yEfCSY0qBvbS1-U1NiyqJm1J-kOT3cD37YvmI_1j1yAijZDw": {
             "owner": "baobao",
@@ -25,7 +27,8 @@
             "match_id": null,
             "active": false,
             "username": "DR BAOBAO MD",
-            "tag": "GOAT"
+            "tag": "GOAT",
+            "region": "na1"
         },
         "dSf-8szm2ntwBBNBY7UA_aEN9HoVShVm4ggSKxjmv90M0ZV4HPU7CkTifrVaPeapy8jpoEx1HyN84w": {
             "owner": "serenity",
@@ -34,7 +37,8 @@
             "match_id": null,
             "active": false,
             "username": "Serenity Snow",
-            "tag": "NA1"
+            "tag": "NA1",
+            "region": "na1"
         },
         "dyUg-U7VSIpOPRxqAgayhOmSt7OfTx4NZVR9v-FxDjj789eXmeGfnVPSCEadLbMLKA8kB5UUzzl_QA": {
             "owner": "baobao",
@@ -43,7 +47,8 @@
             "match_id": null,
             "active": false,
             "username": "pszfanboi",
-            "tag": "NA1"
+            "tag": "NA1",
+            "region": "na1"
         }
     },
     "players": {
@@ -114,23 +119,45 @@
     "bingo": [
         [
             {
-                "imgId": 15,
+                "imgId": 2,
                 "cross": false
             },
             {
-                "imgId": 14,
+                "imgId": 37,
                 "cross": false
             },
             {
-                "imgId": 8,
+                "imgId": 0,
                 "cross": false
             },
             {
-                "imgId": 4,
+                "imgId": 30,
                 "cross": false
             },
             {
-                "imgId": 6,
+                "imgId": 33,
+                "cross": false
+            }
+        ],
+        [
+            {
+                "imgId": 36,
+                "cross": false
+            },
+            {
+                "imgId": 19,
+                "cross": true
+            },
+            {
+                "imgId": 32,
+                "cross": true
+            },
+            {
+                "imgId": 11,
+                "cross": false
+            },
+            {
+                "imgId": 20,
                 "cross": false
             }
         ],
@@ -140,86 +167,64 @@
                 "cross": false
             },
             {
-                "imgId": 33,
-                "cross": false
-            },
-            {
-                "imgId": 30,
-                "cross": false
-            },
-            {
-                "imgId": 34,
-                "cross": false
-            },
-            {
-                "imgId": 12,
-                "cross": false
-            }
-        ],
-        [
-            {
-                "imgId": 2,
-                "cross": false
-            },
-            {
-                "imgId": 36,
-                "cross": false
-            },
-            {
-                "imgId": 11,
-                "cross": false
-            },
-            {
-                "imgId": 29,
-                "cross": false
-            },
-            {
-                "imgId": 17,
-                "cross": true
-            }
-        ],
-        [
-            {
-                "imgId": 21,
-                "cross": false
-            },
-            {
-                "imgId": 3,
-                "cross": false
-            },
-            {
                 "imgId": 31,
                 "cross": false
             },
             {
-                "imgId": 0,
+                "imgId": 13,
                 "cross": false
             },
             {
-                "imgId": 25,
-                "cross": false
-            }
-        ],
-        [
-            {
-                "imgId": 23,
-                "cross": false
-            },
-            {
-                "imgId": 32,
+                "imgId": 6,
                 "cross": false
             },
             {
                 "imgId": 35,
                 "cross": false
+            }
+        ],
+        [
+            {
+                "imgId": 17,
+                "cross": false
             },
             {
-                "imgId": 18,
+                "imgId": 12,
+                "cross": false
+            },
+            {
+                "imgId": 7,
                 "cross": false
             },
             {
                 "imgId": 1,
                 "cross": false
+            },
+            {
+                "imgId": 34,
+                "cross": false
+            }
+        ],
+        [
+            {
+                "imgId": 4,
+                "cross": false
+            },
+            {
+                "imgId": 25,
+                "cross": true
+            },
+            {
+                "imgId": 15,
+                "cross": false
+            },
+            {
+                "imgId": 5,
+                "cross": true
+            },
+            {
+                "imgId": 14,
+                "cross": true
             }
         ]
     ]

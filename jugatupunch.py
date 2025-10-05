@@ -173,7 +173,7 @@ async def jugatupunch(interaction: discord.Interaction, player: Optional[str] = 
     for puuid in config["accounts"]:
         if (config["accounts"][puuid]["owner"] != player):
             continue
-        res = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
+        res = requests.get(f"https://{config["accounts"][puuid]["region"]}.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
         if (res.status_code == 200):
             data = next((rank for rank in res.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
             if (data == None):
@@ -202,7 +202,9 @@ async def addaccount(interaction: discord.Interaction, username: str, tag: str, 
     if (res.status_code == 200):
         data = res.json()
         puuid = data["puuid"]
-        eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
+        regRes = requests.get(f"https://americas.api.riotgames.com/riot/account/v1/region/by-game/lol/by-puuid/{puuid}", headers=HEADER)
+        region = regRes["region"]
+        eloRes = requests.get(f"https://{region}.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
         eloData = next((rank for rank in eloRes.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
         totalLp = TIER_LP[eloData["tier"]] + RANK_LP[eloData["rank"]] + eloData["leaguePoints"]
         config["accounts"][puuid] = {
@@ -212,7 +214,8 @@ async def addaccount(interaction: discord.Interaction, username: str, tag: str, 
             "match_id": None,
             "active": False,
             "username": username,
-            "tag": tag
+            "tag": tag,
+            "region": region
         }
         save_config(config)
         await interaction.response.send_message(f"Succesfully added account {username} #{tag}", ephemeral=True)
@@ -392,6 +395,7 @@ async def generatebingo(interaction: discord.Interaction):
     file = discord.File(buffer, filename="throw.png")
     await interaction.response.send_message(file=file)
 
+# modify bingo
 @tree.command(name="crossbingo", description="Crosses a bingo tile", guilds=GUILD_LIST)
 @app_commands.choices(
     row=[app_commands.Choice(name=i+1, value=i) for i in range(5)],
@@ -411,17 +415,21 @@ async def crossbingo(interaction: discord.Interaction, row: int, column: int, cr
                 checkV = False
             if not config["bingo"][row][i]["cross"]:
                 checkH = False
-        checkD = True
-        if row == column:
+        if checkV or checkH or checkD:
+            msg = "JUGATU PUNCH!"
+        if row == column or max(row, column) - min(row, column):
+            checkD = True
             for i in range(5):
                 if not config["bingo"][i][i]["cross"]:
                     checkD = False
-        if max(row, column) - min(row, column) == 4:
+            if checkV or checkH or checkD:
+                msg = "JUGATU PUNCH!"
+            checkD = True
             for i in range(5):
                 if not config["bingo"][i][4-i]["cross"]:
                     checkD = False
-        if checkV or checkH or checkD:
-            msg = "JUGATU PUNCH!"
+            if checkV or checkH or checkD:
+                msg = "JUGATU PUNCH!"
     save_config(config)
     img = buildBingoImg()
     buffer = io.BytesIO()
@@ -430,6 +438,7 @@ async def crossbingo(interaction: discord.Interaction, row: int, column: int, cr
     file = discord.File(buffer, filename="throw.png")
     await interaction.response.send_message(msg, file=file)
 
+# display bingo
 @tree.command(name="displaybingo", description="Displays the current bingo", guilds=GUILD_LIST)
 async def displaybingo(interaction: discord.Interaction):
     img = buildBingoImg()
@@ -535,7 +544,7 @@ async def checkplayers():
                 for p in range(len(data["info"]["participants"])):
                     pDict = data["info"]["participants"][p]
                     team = 0 if pDict["teamId"] == 100 else 1
-                    eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{pDict['puuid']}", headers=HEADER)
+                    eloRes = requests.get(f"https://{config["accounts"][puuid]["region"]}.api.riotgames.com/lol/league/v4/entries/by-puuid/{pDict['puuid']}", headers=HEADER)
                     eloData = next((rank for rank in eloRes.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
                     if (eloData != None):
                         teamData[team].append({
@@ -595,7 +604,7 @@ async def checkplayers():
 
     for puuid in config["accounts"]:
         owner = config["accounts"][puuid]["owner"]
-        res = requests.get(f"https://na1.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/{puuid}", headers=HEADER)
+        res = requests.get(f"https://{config["accounts"][puuid]["region"]}.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/{puuid}", headers=HEADER)
         if (res.status_code == 200):
             data = res.json()
             if (config["accounts"][puuid]["active"] and config["accounts"][puuid]["match_id"] != data["gameId"]):
@@ -608,7 +617,7 @@ async def checkplayers():
                     for p in range(len(data["participants"])):
                         pDict = data["participants"][p]
                         team = 0 if pDict["teamId"] == 100 else 1
-                        eloRes = requests.get(f"https://na1.api.riotgames.com/lol/league/v4/entries/by-puuid/{pDict['puuid']}", headers=HEADER)
+                        eloRes = requests.get(f"https://{config["accounts"][puuid]["region"]}.api.riotgames.com/lol/league/v4/entries/by-puuid/{pDict['puuid']}", headers=HEADER)
                         eloData = next((rank for rank in eloRes.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
                         if (eloData != None):
                             teamData[team].append({
