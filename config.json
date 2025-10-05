@@ -29,10 +29,10 @@
         },
         "dSf-8szm2ntwBBNBY7UA_aEN9HoVShVm4ggSKxjmv90M0ZV4HPU7CkTifrVaPeapy8jpoEx1HyN84w": {
             "owner": "serenity",
-            "lp": 422,
-            "message_id": 1424244233354739738,
-            "match_id": 5385911797,
-            "active": true,
+            "lp": 400,
+            "message_id": null,
+            "match_id": null,
+            "active": false,
             "username": "Serenity Snow",
             "tag": "NA1"
         },
