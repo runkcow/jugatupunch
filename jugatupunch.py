@@ -6,7 +6,6 @@ import discord
 from discord.ext import tasks
 from typing import Optional
 
-import math
 import random
 import json
 from PIL import Image
@@ -76,8 +75,11 @@ try:
 except requests.HTTPError as e:
     print(f"ERROR:", e, res.text)
 
+BINGO_TILES = 6
 BINGO_SIZE = 200
-BINGO_BACKGROUND = Image.open("yagatuback.png").convert("RGBA").resize((BINGO_SIZE * 5, BINGO_SIZE * 5), Image.Resampling.BILINEAR)
+config["bingo"] = [[{ "imgId": 0, "cross": False } for _ in range(BINGO_TILES)] for _ in range(BINGO_TILES)]
+save_config(config)
+BINGO_BACKGROUND = Image.open("yagatuback.png").convert("RGBA").resize((BINGO_SIZE * BINGO_TILES, BINGO_SIZE * BINGO_TILES), Image.Resampling.BILINEAR)
 BINGO_IMG_ID = [f for f in os.listdir("bingoimg") if f.lower().endswith(".png")]
 BINGO_IMAGES = [
     (lambda img: img.resize(
@@ -126,6 +128,7 @@ async def sync(interaction: discord.Interaction):
     else:
         for g in client.guilds:
             await tree.sync(guild=g)
+        await interaction.response.send_message("Synced", ephemeral=True)
 
 # converts seconds to MM:SS
 def secondStringDisplay(seconds):
@@ -203,7 +206,7 @@ async def addaccount(interaction: discord.Interaction, username: str, tag: str, 
         data = res.json()
         puuid = data["puuid"]
         regRes = requests.get(f"https://americas.api.riotgames.com/riot/account/v1/region/by-game/lol/by-puuid/{puuid}", headers=HEADER)
-        region = regRes["region"]
+        region = regRes.json()["region"]
         eloRes = requests.get(f"https://{region}.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}", headers=HEADER)
         eloData = next((rank for rank in eloRes.json() if rank["queueType"] == "RANKED_SOLO_5x5"), None)
         totalLp = TIER_LP[eloData["tier"]] + RANK_LP[eloData["rank"]] + eloData["leaguePoints"]
@@ -366,10 +369,10 @@ async def displaytauntmessages(interaction: discord.Interaction, player: str):
 
 # build image
 def buildBingoImg():
-    img = Image.new("RGB", (BINGO_SIZE * 5, BINGO_SIZE * 5), color="white")
+    img = Image.new("RGB", (BINGO_SIZE * BINGO_TILES, BINGO_SIZE * BINGO_TILES), color="white")
     img.paste(BINGO_BACKGROUND)
-    for y in range(5):
-        for x in range(5):
+    for y in range(BINGO_TILES):
+        for x in range(BINGO_TILES):
             new = BINGO_IMAGES[config["bingo"][y][x]["imgId"]]
             img.paste(new, (BINGO_SIZE * x + (BINGO_SIZE - new.width) // 2, BINGO_SIZE * y + (BINGO_SIZE - new.height) // 2), mask=new)
             if (config["bingo"][y][x]["cross"]):
@@ -382,10 +385,10 @@ async def generatebingo(interaction: discord.Interaction):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
         return
-    rand = random.sample(range(len(BINGO_IMAGES)), 25)
-    for y in range(5):
-        for x in range(5):
-            config["bingo"][y][x]["imgId"] = rand[y * 5 + x]
+    rand = random.sample(range(len(BINGO_IMAGES)), BINGO_TILES ** 2)
+    for y in range(BINGO_TILES):
+        for x in range(BINGO_TILES):
+            config["bingo"][y][x]["imgId"] = rand[y * BINGO_TILES + x]
             config["bingo"][y][x]["cross"] = False
     save_config(config)
     img = buildBingoImg()
@@ -398,8 +401,8 @@ async def generatebingo(interaction: discord.Interaction):
 # modify bingo
 @tree.command(name="crossbingo", description="Crosses a bingo tile", guilds=GUILD_LIST)
 @app_commands.choices(
-    row=[app_commands.Choice(name=i+1, value=i) for i in range(5)],
-    column=[app_commands.Choice(name=i+1, value=i) for i in range(5)]
+    row=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_TILES)],
+    column=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_TILES)]
 )
 async def crossbingo(interaction: discord.Interaction, row: int, column: int, cross: bool = True):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
@@ -410,7 +413,7 @@ async def crossbingo(interaction: discord.Interaction, row: int, column: int, cr
     if cross:
         checkV = True
         checkH = True
-        for i in range(5):
+        for i in range(BINGO_TILES):
             if not config["bingo"][i][column]["cross"]:
                 checkV = False
             if not config["bingo"][row][i]["cross"]:
@@ -419,13 +422,13 @@ async def crossbingo(interaction: discord.Interaction, row: int, column: int, cr
             msg = "JUGATU PUNCH!"
         if row == column or max(row, column) - min(row, column):
             checkD = True
-            for i in range(5):
+            for i in range(BINGO_TILES):
                 if not config["bingo"][i][i]["cross"]:
                     checkD = False
             if checkD:
                 msg = "JUGATU PUNCH!"
             checkD = True
-            for i in range(5):
+            for i in range(BINGO_TILES):
                 if not config["bingo"][i][4-i]["cross"]:
                     checkD = False
             if checkD:
@@ -438,6 +441,15 @@ async def crossbingo(interaction: discord.Interaction, row: int, column: int, cr
     file = discord.File(buffer, filename="throw.png")
     await interaction.response.send_message(msg, file=file)
 
+# sends name of bingo image
+@tree.command(name="getbingoname", description="Prints the name of the respective image", guilds=GUILD_LIST)
+@app_commands.choices(
+    row=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_TILES)],
+    column=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_TILES)]
+)
+async def crossbingo(interaction: discord.Interaction, row: int, column: int):
+    await interaction.response.send_message(BINGO_IMG_ID[config["bingo"][row][column]["imgId"]])
+
 # display bingo
 @tree.command(name="displaybingo", description="Displays the current bingo", guilds=GUILD_LIST)
 async def displaybingo(interaction: discord.Interaction):
@@ -447,15 +459,6 @@ async def displaybingo(interaction: discord.Interaction):
     buffer.seek(0)
     file = discord.File(buffer, filename="throw.png")
     await interaction.response.send_message(file=file)
-
-# sends name of bingo image
-@tree.command(name="getbingoname", description="Prints the name of the respective image", guilds=GUILD_LIST)
-@app_commands.choices(
-    row=[app_commands.Choice(name=i+1, value=i) for i in range(5)],
-    column=[app_commands.Choice(name=i+1, value=i) for i in range(5)]
-)
-async def crossbingo(interaction: discord.Interaction, row: int, column: int, cross: bool = True):
-    await interaction.response.send_message(BINGO_IMG_ID[config["bingo"][row][column]["imgId"]])
 
 # command to display config contents
 @tree.command(name="printconfig", description="Prints config.json", guilds=GUILD_LIST)
@@ -609,7 +612,6 @@ async def checkplayers():
             config["accounts"][puuid]["match_id"] = None
             config["accounts"][puuid]["active"] = False
             save_config(config)
-            
         except requests.HTTPError as e:
             print("HTTP ERROR:", e, res.text)
 
@@ -666,7 +668,7 @@ async def checkplayers():
                     tauntMessage
                 )
                 msg = await client.get_guild(MEOW_GUILD_ID).get_channel(config["players"][owner]["output_channel_id"]).send(embed=embed)
-                
+
                 config["accounts"][puuid]["message_id"] = msg.id
                 config["accounts"][puuid]["match_id"] = data["gameId"]
                 config["accounts"][puuid]["active"] = True
