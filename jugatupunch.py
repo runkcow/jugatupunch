@@ -448,6 +448,15 @@ async def displaybingo(interaction: discord.Interaction):
     file = discord.File(buffer, filename="throw.png")
     await interaction.response.send_message(file=file)
 
+# sends name of bingo image
+@tree.command(name="getbingoname", description="Prints the name of the respective image", guilds=GUILD_LIST)
+@app_commands.choices(
+    row=[app_commands.Choice(name=i+1, value=i) for i in range(5)],
+    column=[app_commands.Choice(name=i+1, value=i) for i in range(5)]
+)
+async def crossbingo(interaction: discord.Interaction, row: int, column: int, cross: bool = True):
+    await interaction.response.send_message(BINGO_IMG_ID[config["bingo"][row][column]["imgId"]])
+
 # command to display config contents
 @tree.command(name="printconfig", description="Prints config.json", guilds=GUILD_LIST)
 async def printconfig(interaction: discord.Interaction):
