@@ -494,7 +494,7 @@ def gameEmbedBuilder(result: bool, riotId: str, championId: int, time: dict, que
         else:
             descStr += f"\nDPK: infinity"
         descStr += f"\nLCS: {postGameData['largestCriticalStrike']}"
-    descStr += f"\n{QUEUE_ID[queueId]}\n"
+    descStr += f"\n{QUEUE_ID[queueId]}"
     if (queueId == 420): # if the queue is 5v5 ranked
         if (result != None):
             titleStr += f" {postGameData['lpDiff']} LP"
@@ -517,7 +517,9 @@ def gameEmbedBuilder(result: bool, riotId: str, championId: int, time: dict, que
                     descStr += f"\n{championStr:{strLen[0]}} {p['tier'][0]}{RANK_NUMERICAL[p['rank']]} {p['lp']:>2}LP - {(100 * p['wins']) // (p['wins'] + p['losses'])}% / {p['wins']:>{strLen[1]}}W {p['losses']:>{strLen[2]}}L"
                 else:
                     descStr += f"\n{championStr:{strLen[0]}} No Data"
-        descStr += f"\n```"
+        descStr += f"```"
+    else:
+        descStr += f"\n"
     if (tauntMessage != None):
         descStr += f"{tauntMessage}"
     embed = discord.Embed(
