@@ -1,9 +1,8 @@
+make bingo pull images from online
 add dodge tracking (registered players only) check for lp lost when a game hasn't been played (-5, -15, -15)
-rework checkplayer, remove duplicate code
-add team position using online ML based detection
 add ranked flex lp 
 add audio recording to bot
-jugatu bingo
 send gif when jugatu's kda is below 1
 store last rank tier and division within config that gets updated by jugatupunch to save api calls (?)
 create an image representing which items and runes player went after game ends
+add team position using online ML based detection

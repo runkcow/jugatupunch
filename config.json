@@ -12,7 +12,7 @@
         },
         "oI7HAHlRVlEPStyQ7tbSsbzCD2tjfK_k3Bz2nt6HS76RiNoVtDWBaTB13R3rzsyAW1SgoKEw_XPSOQ": {
             "owner": "jugatu",
-            "lp": 2434,
+            "lp": 2438,
             "message_id": null,
             "match_id": null,
             "active": false,
@@ -32,7 +32,7 @@
         },
         "dSf-8szm2ntwBBNBY7UA_aEN9HoVShVm4ggSKxjmv90M0ZV4HPU7CkTifrVaPeapy8jpoEx1HyN84w": {
             "owner": "serenity",
-            "lp": 433,
+            "lp": 277,
             "message_id": null,
             "match_id": null,
             "active": false,
@@ -42,7 +42,7 @@
         },
         "dyUg-U7VSIpOPRxqAgayhOmSt7OfTx4NZVR9v-FxDjj789eXmeGfnVPSCEadLbMLKA8kB5UUzzl_QA": {
             "owner": "baobao",
-            "lp": 2326,
+            "lp": 2398,
             "message_id": null,
             "match_id": null,
             "active": false,
@@ -52,12 +52,22 @@
         },
         "FE4qFBEsB-wzpONoLtZ14IbPAvL2yAke9c6EZ5a33hFimQcDaz5CTIJOt_JVptGo1JofdTfO10Mb8A": {
             "owner": "SteveM",
-            "lp": 1655,
+            "lp": 1816,
             "message_id": null,
             "match_id": null,
             "active": false,
             "username": "BoggedZulu57376",
             "tag": "Zulu",
+            "region": "na1"
+        },
+        "BmL1hRUAUS66YSNxXCUw6a6koYmWetWnIQUo7ZlqZUsQ-2qs_xs8mO7HoHvCG6kpYTQp7uXe-tI-Eg": {
+            "owner": "ratstretcher",
+            "lp": 1558,
+            "message_id": null,
+            "match_id": null,
+            "active": false,
+            "username": "eathumanchild",
+            "tag": "flesh",
             "region": "na1"
         }
     },
@@ -90,7 +100,7 @@
                     "jugatupunch...... Jugatu lost because he got filled... not the roles, but his insides."
                 ]
             },
-            "output_channel_id": 1420647209468166174
+            "output_channel_id": 1425344863280566312
         },
         "baobao": {
             "lp_goal": 3800,
@@ -133,164 +143,253 @@
                 "loss": []
             },
             "output_channel_id": 1420647209468166174
+        },
+        "ratstretcher": {
+            "lp_goal": 1600,
+            "taunt_message": {
+                "won": [],
+                "in_session": [],
+                "loss": []
+            },
+            "output_channel_id": 1420647209468166174
         }
     },
-    "bingo": [
-        [
-            {
-                "imgId": 9,
-                "cross": false
-            },
-            {
-                "imgId": 27,
-                "cross": false
-            },
-            {
-                "imgId": 29,
-                "cross": false
-            },
-            {
-                "imgId": 10,
-                "cross": false
-            },
-            {
-                "imgId": 19,
-                "cross": false
-            },
-            {
-                "imgId": 12,
-                "cross": false
-            }
-        ],
-        [
-            {
-                "imgId": 4,
-                "cross": false
-            },
-            {
-                "imgId": 13,
-                "cross": false
-            },
-            {
-                "imgId": 23,
-                "cross": false
-            },
-            {
-                "imgId": 32,
-                "cross": false
-            },
-            {
-                "imgId": 42,
-                "cross": false
-            },
-            {
-                "imgId": 38,
-                "cross": false
-            }
-        ],
-        [
-            {
-                "imgId": 2,
-                "cross": false
-            },
-            {
-                "imgId": 34,
-                "cross": false
-            },
-            {
-                "imgId": 5,
-                "cross": false
-            },
-            {
-                "imgId": 14,
-                "cross": false
-            },
-            {
-                "imgId": 40,
-                "cross": false
-            },
-            {
-                "imgId": 11,
-                "cross": false
-            }
-        ],
-        [
-            {
-                "imgId": 3,
-                "cross": false
-            },
-            {
-                "imgId": 37,
-                "cross": true
-            },
-            {
-                "imgId": 17,
-                "cross": false
-            },
-            {
-                "imgId": 39,
-                "cross": false
-            },
-            {
-                "imgId": 21,
-                "cross": false
-            },
-            {
-                "imgId": 31,
-                "cross": false
-            }
-        ],
-        [
-            {
-                "imgId": 24,
-                "cross": false
-            },
-            {
-                "imgId": 30,
-                "cross": false
-            },
-            {
-                "imgId": 33,
-                "cross": true
-            },
-            {
-                "imgId": 8,
-                "cross": true
-            },
-            {
-                "imgId": 41,
-                "cross": false
-            },
-            {
-                "imgId": 22,
-                "cross": false
-            }
-        ],
-        [
-            {
-                "imgId": 15,
-                "cross": false
-            },
-            {
-                "imgId": 43,
-                "cross": false
-            },
-            {
-                "imgId": 20,
-                "cross": false
-            },
-            {
-                "imgId": 7,
-                "cross": false
-            },
-            {
-                "imgId": 35,
-                "cross": false
-            },
-            {
-                "imgId": 36,
-                "cross": false
-            }
+    "bingo": {
+        "cross_count": {
+            "horizontal": [
+                7,
+                1,
+                1,
+                7,
+                1,
+                1,
+                1
+            ],
+            "vertical": [
+                2,
+                3,
+                3,
+                2,
+                3,
+                3,
+                3
+            ],
+            "diagonal": [
+                7,
+                1
+            ]
+        },
+        "board": [
+            [
+                {
+                    "imgId": 23,
+                    "cross": true
+                },
+                {
+                    "imgId": 10,
+                    "cross": true
+                },
+                {
+                    "imgId": 12,
+                    "cross": true
+                },
+                {
+                    "imgId": 4,
+                    "cross": true
+                },
+                {
+                    "imgId": 44,
+                    "cross": true
+                },
+                {
+                    "imgId": 34,
+                    "cross": true
+                },
+                {
+                    "imgId": 11,
+                    "cross": true
+                }
+            ],
+            [
+                {
+                    "imgId": 13,
+                    "cross": false
+                },
+                {
+                    "imgId": 37,
+                    "cross": true
+                },
+                {
+                    "imgId": 18,
+                    "cross": false
+                },
+                {
+                    "imgId": 7,
+                    "cross": false
+                },
+                {
+                    "imgId": 47,
+                    "cross": false
+                },
+                {
+                    "imgId": 8,
+                    "cross": false
+                },
+                {
+                    "imgId": 30,
+                    "cross": false
+                }
+            ],
+            [
+                {
+                    "imgId": 41,
+                    "cross": false
+                },
+                {
+                    "imgId": 21,
+                    "cross": false
+                },
+                {
+                    "imgId": 15,
+                    "cross": true
+                },
+                {
+                    "imgId": 3,
+                    "cross": false
+                },
+                {
+                    "imgId": 40,
+                    "cross": false
+                },
+                {
+                    "imgId": 5,
+                    "cross": false
+                },
+                {
+                    "imgId": 20,
+                    "cross": false
+                }
+            ],
+            [
+                {
+                    "imgId": 31,
+                    "cross": true
+                },
+                {
+                    "imgId": 24,
+                    "cross": true
+                },
+                {
+                    "imgId": 48,
+                    "cross": true
+                },
+                {
+                    "imgId": 33,
+                    "cross": true
+                },
+                {
+                    "imgId": 29,
+                    "cross": true
+                },
+                {
+                    "imgId": 27,
+                    "cross": true
+                },
+                {
+                    "imgId": 0,
+                    "cross": true
+                }
+            ],
+            [
+                {
+                    "imgId": 14,
+                    "cross": false
+                },
+                {
+                    "imgId": 32,
+                    "cross": false
+                },
+                {
+                    "imgId": 22,
+                    "cross": false
+                },
+                {
+                    "imgId": 9,
+                    "cross": false
+                },
+                {
+                    "imgId": 35,
+                    "cross": true
+                },
+                {
+                    "imgId": 28,
+                    "cross": false
+                },
+                {
+                    "imgId": 19,
+                    "cross": false
+                }
+            ],
+            [
+                {
+                    "imgId": 39,
+                    "cross": false
+                },
+                {
+                    "imgId": 6,
+                    "cross": false
+                },
+                {
+                    "imgId": 38,
+                    "cross": false
+                },
+                {
+                    "imgId": 36,
+                    "cross": false
+                },
+                {
+                    "imgId": 17,
+                    "cross": false
+                },
+                {
+                    "imgId": 2,
+                    "cross": true
+                },
+                {
+                    "imgId": 46,
+                    "cross": false
+                }
+            ],
+            [
+                {
+                    "imgId": 25,
+                    "cross": false
+                },
+                {
+                    "imgId": 43,
+                    "cross": false
+                },
+                {
+                    "imgId": 1,
+                    "cross": false
+                },
+                {
+                    "imgId": 45,
+                    "cross": false
+                },
+                {
+                    "imgId": 42,
+                    "cross": false
+                },
+                {
+                    "imgId": 26,
+                    "cross": false
+                },
+                {
+                    "imgId": 16,
+                    "cross": true
+                }
+            ]
         ]
-    ]
+    }
 }

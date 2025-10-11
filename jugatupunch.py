@@ -8,7 +8,7 @@ from typing import Optional
 
 import random
 import json
-from PIL import Image
+from PIL import Image, ImageDraw
 
 import io
 import requests
@@ -75,20 +75,24 @@ try:
 except requests.HTTPError as e:
     print(f"ERROR:", e, res.text)
 
-BINGO_TILES = 6
-BINGO_SIZE = 200
-config["bingo"] = [[{ "imgId": 0, "cross": False } for _ in range(BINGO_TILES)] for _ in range(BINGO_TILES)]
-save_config(config)
-BINGO_BACKGROUND = Image.open("yagatuback.png").convert("RGBA").resize((BINGO_SIZE * BINGO_TILES, BINGO_SIZE * BINGO_TILES), Image.Resampling.BILINEAR)
+BINGO_SIZE = 7
+BINGO_PIXEL = 200
+if (len(config["bingo"]["board"]) != BINGO_SIZE):
+    config["bingo"] = {
+        "cross_count": { "horizontal": [0 for _ in range(BINGO_SIZE)], "vertical": [0 for _ in range(BINGO_SIZE)], "diagonal": [0, 0] },
+        "board": [[{ "imgId": 0, "cross": False } for _ in range(BINGO_SIZE)] for _ in range(BINGO_SIZE)]
+    }
+    save_config(config)
+BINGO_BACKGROUND = Image.open("yagatuback.png").convert("RGBA").resize((BINGO_PIXEL * BINGO_SIZE, BINGO_PIXEL * BINGO_SIZE), Image.Resampling.BILINEAR)
 BINGO_IMG_ID = [f for f in os.listdir("bingoimg") if f.lower().endswith(".png")]
 BINGO_IMAGES = [
     (lambda img: img.resize(
-        (int(img.width * min(BINGO_SIZE / img.width, BINGO_SIZE / img.height)),
-         int(img.height * min(BINGO_SIZE / img.width, BINGO_SIZE / img.height))),
+        (int(img.width * min(BINGO_PIXEL / img.width, BINGO_PIXEL / img.height)),
+         int(img.height * min(BINGO_PIXEL / img.width, BINGO_PIXEL / img.height))),
         Image.Resampling.BILINEAR))(Image.open(f"bingoimg/{name}").convert("RGBA"))
     for name in BINGO_IMG_ID
 ]
-BINGO_CROSS = Image.open("xmarksthespot.png").convert("RGBA").resize((BINGO_SIZE, BINGO_SIZE), Image.Resampling.BILINEAR)
+BINGO_CROSS = Image.open("xmarksthespot.png").convert("RGBA").resize((BINGO_PIXEL, BINGO_PIXEL), Image.Resampling.BILINEAR)
 
 TIER_LP = {
     "IRON"     : 0,
@@ -166,11 +170,16 @@ async def makepfp(interaction: discord.Interaction, message: discord.Message):
             await interaction.response.send_message("aw shit something blew up", ephemeral=True)
             print("HTTP ERROR:", e)
 
+async def playerautocomplete(interaction: discord.Interaction, current: str):
+    players = list(config["players"].keys())
+    matches = [name for name in players if current.lower() in name.lower()]
+    return [ app_commands.Choice(name=name, value=name) for name in matches[:25] ]
+
 # JUGATU PUNCH!
 # checks remaining lp of a player, temporary function, main function should display rank of a player
 @tree.command(name="jugatupunch", description="Who is who?", guilds=GUILD_LIST)
 @app_commands.describe(player="noob")
-@app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
+# @app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
 async def jugatupunch(interaction: discord.Interaction, player: Optional[str] = "jugatu"):
     respondStr = ""
     for puuid in config["accounts"]:
@@ -192,11 +201,12 @@ async def jugatupunch(interaction: discord.Interaction, player: Optional[str] = 
             respondStr += f"{player.upper()}'S GONE"
     respondStr += f"<#{config['players'][player]['output_channel_id']}>"
     await interaction.response.send_message(respondStr)
+jugatupunch.autocomplete("player")(playerautocomplete)
 
 # command to add accounts
 @tree.command(name="addaccount", description="Add accounts to track", guilds=GUILD_LIST)
 @app_commands.describe(username="Account username", tag="Account tag without '#'", owner="Account owner")
-@app_commands.choices(owner=[app_commands.Choice(name=k, value=k) for k in config["players"]])
+# @app_commands.choices(owner=[app_commands.Choice(name=k, value=k) for k in config["players"]])
 async def addaccount(interaction: discord.Interaction, username: str, tag: str, owner: str):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
         await interaction.response.send_message("Unauthorized use of command")
@@ -227,11 +237,17 @@ async def addaccount(interaction: discord.Interaction, username: str, tag: str, 
     else:
         res.raise_for_status()
         await interaction.response.send_message("Problem has occurred...", ephemeral=True)
+addaccount.autocomplete("owner")(playerautocomplete)
+
+async def accountautocomplete(interaction: discord.Interaction, current: str):
+    accounts = { puuid: f"{info['username']}#{info['tag']}" for puuid, info in config["accounts"] }
+    matches = [name for puuid, name in accounts if current.lower() in name.lower()]
+    return [ app_commands.Choice(name=name, value=name) for name in matches[:25] ]
 
 # command to remove accounts
 @tree.command(name="removeaccount", description="Remove an account from tracked list", guilds=GUILD_LIST)
 @app_commands.describe(account="Account name")
-@app_commands.choices(account=[app_commands.Choice(name=f"{value['username']} #{value['tag']}", value=puuid) for puuid, value in config["accounts"].items()])
+# @app_commands.choices(account=[app_commands.Choice(name=f"{value['username']} #{value['tag']}", value=puuid) for puuid, value in config["accounts"].items()])
 async def removeaccount(interaction: discord.Interaction, account: str):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
@@ -239,14 +255,15 @@ async def removeaccount(interaction: discord.Interaction, account: str):
     config["accounts"].pop(account)
     save_config(config)
     await interaction.response.send_message("Successfully removed account", ephemeral=True)
+removeaccount.autocomplete("account")(accountautocomplete)
 
 # command to change account owner
 @tree.command(name="changeaccountowner", description="Change the owner of an account, manages which text channel tracked games output to", guilds=GUILD_LIST)
 @app_commands.describe(account="Account name", owner="Owner name")
-@app_commands.choices(
-    account=[app_commands.Choice(name=f"{value['username']} #{value['tag']}", value=puuid) for puuid, value in config["accounts"].items()],
-    owner=[app_commands.Choice(name=k, value=k) for k in config["players"]]
-)
+# @app_commands.choices(
+#     account=[app_commands.Choice(name=f"{value['username']} #{value['tag']}", value=puuid) for puuid, value in config["accounts"].items()],
+#     owner=[app_commands.Choice(name=k, value=k) for k in config["players"]]
+# )
 async def changeaccountowner(interaction: discord.Interaction, account: str, owner: str):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
@@ -254,6 +271,8 @@ async def changeaccountowner(interaction: discord.Interaction, account: str, own
     config["accounts"][account]["owner"] = owner
     save_config(config)
     await interaction.response.send_message("Successfully changed owner", ephemeral=True)
+changeaccountowner.autocomplete("account")(accountautocomplete)
+changeaccountowner.autocomplete("owner")(playerautocomplete)
 
 # command to add players
 @tree.command(name="addplayer", description="Add a player to listed owners", guilds=GUILD_LIST)
@@ -273,8 +292,8 @@ async def addplayer(interaction: discord.Interaction, player: str, outputchannel
 # command to remove player
 @tree.command(name="removeplayer", description="Removes a player from owner list, impossible if an account is under this player's name", guilds=GUILD_LIST)
 @app_commands.describe(player="Player")
-@app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
-async def changeoutputchannel(interaction: discord.Interaction, player: str):
+# @app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
+async def removeplayer(interaction: discord.Interaction, player: str):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
         return
@@ -287,24 +306,26 @@ async def changeoutputchannel(interaction: discord.Interaction, player: str):
         return
     config["players"].pop(player)
     save_config(config)
-    await interaction.response.send_message(f"Successfully changed output channel of {player}", ephemeral=True)
+    await interaction.response.send_message(f"Successfully removed player {player}", ephemeral=True)
+removeplayer.autocomplete("player")(playerautocomplete)
 
 # command to change lp goal
 @tree.command(name="changelpgoal", description="Changes lp goal of a player", guilds=GUILD_LIST)
 @app_commands.describe(player="Player", lpgoal="New LP goal")
-@app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
-async def changeoutputchannel(interaction: discord.Interaction, player: str, lpgoal: int):
+# @app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
+async def changelpgoal(interaction: discord.Interaction, player: str, lpgoal: int):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
         return
     config["players"][player]["lp_goal"] = lpgoal
     save_config(config)
     await interaction.response.send_message(f"Successfully changed LP goal of {player}", ephemeral=True)
+changelpgoal.autocomplete("player")(playerautocomplete)
 
 # command to change output channel of player
 @tree.command(name="changeoutputchannel", description="Changes output channel of a player", guilds=GUILD_LIST)
 @app_commands.describe(player="Player", channel="Channel")
-@app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
+# @app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
 async def changeoutputchannel(interaction: discord.Interaction, player: str, channel: discord.TextChannel):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
@@ -312,12 +333,13 @@ async def changeoutputchannel(interaction: discord.Interaction, player: str, cha
     config["players"][player]["output_channel_id"] = channel.id
     save_config(config)
     await interaction.response.send_message("Successfully changed output channel", ephemeral=True)
+changeoutputchannel.autocomplete("player")(playerautocomplete)
 
 # command to add taunt messages
 @tree.command(name="addtauntmessage", description="Adds a taunt message", guilds=GUILD_LIST)
 @app_commands.describe(player="Player", category="Category", tauntmessage="New taunt message")
 @app_commands.choices(
-    player=[app_commands.Choice(name=k, value=k) for k in config["players"]],
+    # player=[app_commands.Choice(name=k, value=k) for k in config["players"]],
     category=[
         app_commands.Choice(name="won", value="won"),
         app_commands.Choice(name="in_session", value="in_session"),
@@ -331,12 +353,13 @@ async def addtauntmessage(interaction: discord.Interaction, player: str, categor
     config["players"][player]["taunt_message"][category].append(tauntmessage)
     save_config(config)
     await interaction.response.send_message(f"Successfully added taunt message to {player}", ephemeral=True)
+addtauntmessage.autocomplete("player")(playerautocomplete)
 
 # command to remove taunt messages
 @tree.command(name="removetauntmessage", description="Removes a taunt message", guilds=GUILD_LIST)
 @app_commands.describe(player="Specified player", category="Specified category", index="Specified index")
 @app_commands.choices(
-    player=[app_commands.Choice(name=k, value=k) for k in config["players"]],
+    # player=[app_commands.Choice(name=k, value=k) for k in config["players"]],
     category=[app_commands.Choice(name=k, value=k) for k in ["won", "in_session", "loss"]]
 )
 async def removetauntmessage(interaction: discord.Interaction, player: str, category: str, index: int):
@@ -349,11 +372,12 @@ async def removetauntmessage(interaction: discord.Interaction, player: str, cate
         return
     taunt = config["players"][player]["taunt_message"][category].pop(index)
     await interaction.response.send_message(f"Removed taunt message: {taunt}", ephemeral=True)
+removetauntmessage.autocomplete("player")(playerautocomplete)
 
 # command to display all taunt messages
 @tree.command(name="displaytauntmessages", description="Displays all taunt messages", guilds=GUILD_LIST)
 @app_commands.describe(player="Specified player's taunt messages")
-@app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
+# @app_commands.choices(player=[app_commands.Choice(name=k, value=k) for k in config["players"]])
 async def displaytauntmessages(interaction: discord.Interaction, player: str):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID]):
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
@@ -366,17 +390,28 @@ async def displaytauntmessages(interaction: discord.Interaction, player: str):
             responseStr += f"`{i}:` {taunt}\n"
             i = i + 1
     await interaction.response.send_message(responseStr, ephemeral=True)
+displaytauntmessages.autocomplete("player")(playerautocomplete)
 
 # build image
 def buildBingoImg():
-    img = Image.new("RGB", (BINGO_SIZE * BINGO_TILES, BINGO_SIZE * BINGO_TILES), color="white")
+    img = Image.new("RGB", (BINGO_PIXEL * BINGO_SIZE, BINGO_PIXEL * BINGO_SIZE), color="white")
     img.paste(BINGO_BACKGROUND)
-    for y in range(BINGO_TILES):
-        for x in range(BINGO_TILES):
-            new = BINGO_IMAGES[config["bingo"][y][x]["imgId"]]
-            img.paste(new, (BINGO_SIZE * x + (BINGO_SIZE - new.width) // 2, BINGO_SIZE * y + (BINGO_SIZE - new.height) // 2), mask=new)
-            if (config["bingo"][y][x]["cross"]):
-                img.paste(BINGO_CROSS, (BINGO_SIZE * x, BINGO_SIZE * y), mask=BINGO_CROSS)
+    for y in range(BINGO_SIZE):
+        for x in range(BINGO_SIZE):
+            new = BINGO_IMAGES[config["bingo"]["board"][y][x]["imgId"]]
+            img.paste(new, (BINGO_PIXEL * x + (BINGO_PIXEL - new.width) // 2, BINGO_PIXEL * y + (BINGO_PIXEL - new.height) // 2), mask=new)
+            if (config["bingo"]["board"][y][x]["cross"]):
+                img.paste(BINGO_CROSS, (BINGO_PIXEL * x, BINGO_PIXEL * y), mask=BINGO_CROSS)
+    draw = ImageDraw.Draw(img)
+    for i in range(BINGO_SIZE):
+        if (config["bingo"]["cross_count"]["horizontal"][i] >= BINGO_SIZE):
+            draw.line((0, BINGO_PIXEL * i + BINGO_PIXEL // 2, BINGO_PIXEL * BINGO_SIZE, BINGO_PIXEL * i + BINGO_PIXEL // 2), fill=(255, 0, 0), width=6)
+        if (config["bingo"]["cross_count"]["vertical"][i] >= BINGO_SIZE):
+            draw.line((BINGO_PIXEL * i + BINGO_PIXEL // 2, 0, BINGO_PIXEL * i + BINGO_PIXEL // 2, BINGO_PIXEL * BINGO_SIZE), fill=(255, 0, 0), width=6)
+    if (config["bingo"]["cross_count"]["diagonal"][0] >= BINGO_SIZE):
+        draw.line((0, 0, BINGO_PIXEL * BINGO_SIZE, BINGO_PIXEL * BINGO_SIZE), fill=(255, 0, 0), width=6)
+    if (config["bingo"]["cross_count"]["diagonal"][1] >= BINGO_SIZE):
+        draw.line((BINGO_PIXEL * BINGO_SIZE, 0, 0, BINGO_PIXEL * BINGO_SIZE), fill=(255, 0, 0), width=6)
     return img
 
 # command to create a bingo card, for the sake of simplicity, there can only be one active bingo card
@@ -385,11 +420,12 @@ async def generatebingo(interaction: discord.Interaction):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
         return
-    rand = random.sample(range(len(BINGO_IMAGES)), BINGO_TILES ** 2)
-    for y in range(BINGO_TILES):
-        for x in range(BINGO_TILES):
-            config["bingo"][y][x]["imgId"] = rand[y * BINGO_TILES + x]
-            config["bingo"][y][x]["cross"] = False
+    rand = random.sample(range(len(BINGO_IMAGES)), BINGO_SIZE ** 2)
+    for y in range(BINGO_SIZE):
+        for x in range(BINGO_SIZE):
+            config["bingo"]["board"][y][x]["imgId"] = rand[y * BINGO_SIZE + x]
+            config["bingo"]["board"][y][x]["cross"] = False
+    config["bingo"]["cross_count"] = { "horizontal": [0 for _ in range(BINGO_SIZE)], "vertical": [0 for _ in range(BINGO_SIZE)], "diagonal": [0, 0] }
     save_config(config)
     img = buildBingoImg()
     buffer = io.BytesIO()
@@ -401,38 +437,32 @@ async def generatebingo(interaction: discord.Interaction):
 # modify bingo
 @tree.command(name="crossbingo", description="Crosses a bingo tile", guilds=GUILD_LIST)
 @app_commands.choices(
-    row=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_TILES)],
-    column=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_TILES)]
+    row=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_SIZE)],
+    column=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_SIZE)]
 )
 async def crossbingo(interaction: discord.Interaction, row: int, column: int, cross: bool = True):
     if (interaction.user.id not in [MY_ID, BAOBAO_ID, JUGATU_ID]):
         await interaction.response.send_message("Unauthorized use of command", ephemeral=True)
         return
-    config["bingo"][row][column]["cross"] = cross
     msg = ""
-    if cross:
-        checkV = True
-        checkH = True
-        for i in range(BINGO_TILES):
-            if not config["bingo"][i][column]["cross"]:
-                checkV = False
-            if not config["bingo"][row][i]["cross"]:
-                checkH = False
-        if checkV or checkH:
-            msg = "JUGATU PUNCH!"
-        if row == column or max(row, column) - min(row, column):
-            checkD = True
-            for i in range(BINGO_TILES):
-                if not config["bingo"][i][i]["cross"]:
-                    checkD = False
-            if checkD:
-                msg = "JUGATU PUNCH!"
-            checkD = True
-            for i in range(BINGO_TILES):
-                if not config["bingo"][i][4-i]["cross"]:
-                    checkD = False
-            if checkD:
-                msg = "JUGATU PUNCH!"
+    crossed = config["bingo"]["board"][row][column]["cross"]
+    difference = 1 if cross else -1
+    if crossed != cross:
+        config["bingo"]["board"][row][column]["cross"] = cross
+        config["bingo"]["cross_count"]["horizontal"][row] += difference
+        if config["bingo"]["cross_count"]["horizontal"][row] >= BINGO_SIZE:
+            msg += "BINGO"
+        config["bingo"]["cross_count"]["vertical"][column] += difference
+        if config["bingo"]["cross_count"]["vertical"][column] >= BINGO_SIZE:
+            msg += "BINGO"
+        if row == column:
+            config["bingo"]["cross_count"]["diagonal"][0] += difference
+            if config["bingo"]["cross_count"]["diagonal"][0] >= BINGO_SIZE:
+                msg += "BINGO"
+        if max(row, column) - min(row, column) == BINGO_SIZE - 1:
+            config["bingo"]["cross_count"]["diagonal"][1] += difference
+            if config["bingo"]["cross_count"]["diagonal"][1] >= BINGO_SIZE:
+                msg += "BINGO"
     save_config(config)
     img = buildBingoImg()
     buffer = io.BytesIO()
@@ -444,11 +474,13 @@ async def crossbingo(interaction: discord.Interaction, row: int, column: int, cr
 # sends name of bingo image
 @tree.command(name="getbingoname", description="Prints the name of the respective image", guilds=GUILD_LIST)
 @app_commands.choices(
-    row=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_TILES)],
-    column=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_TILES)]
+    row=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_SIZE)],
+    column=[app_commands.Choice(name=i+1, value=i) for i in range(BINGO_SIZE)]
 )
 async def crossbingo(interaction: discord.Interaction, row: int, column: int):
-    await interaction.response.send_message(BINGO_IMG_ID[config["bingo"][row][column]["imgId"]])
+    fileName = BINGO_IMG_ID[config["bingo"]["board"][row][column]["imgId"]]
+    file = discord.File(f"bingoimg/{fileName}", fileName)
+    await interaction.response.send_message(fileName, file=file)
 
 # display bingo
 @tree.command(name="displaybingo", description="Displays the current bingo", guilds=GUILD_LIST)
@@ -506,7 +538,10 @@ def gameEmbedBuilder(result: bool, riotId: str, championId: int, time: dict, que
         else:
             descStr += f"\nDPK: infinity"
         descStr += f"\nLCS: {postGameData['largestCriticalStrike']}"
-    descStr += f"\n{QUEUE_ID[queueId]}"
+    try:
+        descStr += f"\n{QUEUE_ID[queueId]}"
+    except KeyError as e:
+        print("ERROR:", queueId, e)
     if (queueId == 420): # if the queue is 5v5 ranked
         if (result != None):
             titleStr += f" {postGameData['lpDiff']} LP"
